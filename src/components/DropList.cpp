@@ -80,17 +80,28 @@ void DropList::setupChoiceOptionsBodies(std::pair<int,int> size, std::pair<int,i
     choiceListBody.setOutlineThickness(-2);
 }
 
+void DropList::setupSelectedText(std::pair<int,int> pos) {
+    int fontSize = size.second/2.5;
+    selectedText.setFont(theme.getFont());
+    selectedText.setString(selected);
+    selectedText.setCharacterSize(fontSize);
+    selectedText.setPosition(sf::Vector2f(pos.first+8, pos.second+((size.second-selectedText.getGlobalBounds().height)/3)));
+    selectedText.setFillColor(theme.getFontColor());
+}
+
 DropList::DropList(std::vector<std::string> choices,
                Theme& theme,
                std::pair<int,int> size,
                std::pair<int,int> pos)
     : InteractiveElement(theme, size, pos, ""),
     choices(choices),
+    selected(choices[0]),
     button("", theme, {size.second-8, size.second-8}, {pos.first+size.first-size.second+4, pos.second+4}) {
         setupChoiceBody(size, pos);
         setupChoicePadding(size, pos);
         setupChoiceMargins(size, pos);
         setupTriangleIcon({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
+        setupSelectedText(pos);
         setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
 }
 
@@ -99,11 +110,13 @@ DropList::DropList(std::vector<std::string> choices,
                std::pair<int,int> size)
     : InteractiveElement(theme, size, ""),
     choices(choices),
+    selected(choices[0]),
     button("", theme, {size.second-8, size.second-8}, {pos.first+size.first-size.second+4, pos.second+4}) {
         setupChoiceBody(size, pos);
         setupChoicePadding(size, pos);
         setupChoiceMargins(size, pos);
         setupTriangleIcon({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
+        setupSelectedText(pos);
         setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
 }
 
@@ -115,6 +128,7 @@ void DropList::setPosition(std::pair<int,int> pos) {
     setupChoiceMargins(size, pos);
     setupTriangleIcon({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
     setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
+    setupSelectedText(pos);
 }
 
 void DropList::setSize(std::pair<int,int> size) {
@@ -125,6 +139,7 @@ void DropList::setSize(std::pair<int,int> size) {
     setupChoiceMargins(size, pos);
     setupTriangleIcon({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
     setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
+    setupSelectedText(pos);
 }
 
 void DropList::updateHover(const sf::RenderWindow& window) {
@@ -137,33 +152,36 @@ void DropList::updateHover(const sf::RenderWindow& window) {
         sf::RectangleShape& rect = option.first;
 
         if (rect.getGlobalBounds().contains(mouse)) {
-            rect.setFillColor(sf::Color(200, 200, 255));
+            rect.setFillColor(theme.getMainLighterColor());
         } else {
-            rect.setFillColor(sf::Color::White);
+            rect.setFillColor(theme.getInputColor());
         }
     }
 }
 
 void DropList::draw(sf::RenderWindow& window) {  
-    window.draw(choiceBody);
-    window.draw(choiceMarginDark1);
-    window.draw(choiceMarginDark2);
-    window.draw(choicePaddingDark1);
-    window.draw(choicePaddingDark2);
-    window.draw(choiceMarginLight1);
-    window.draw(choiceMarginLight2);
-    window.draw(choicePaddingLight1);
-    window.draw(choicePaddingLight2);
-    button.draw(window);
-    window.draw(triangleIcon);
-    if(showChoices){
-        if(!isChoicePressed) {updateHover(window);}
-        window.draw(choiceListBody);
-        for(std::pair<sf::RectangleShape, sf::Text> choiceObject:choiceOptionsBodies){
-            window.draw(choiceObject.first);
-            window.draw(choiceObject.second);
+    if (visible){
+        window.draw(choiceBody);
+        window.draw(choiceMarginDark1);
+        window.draw(choiceMarginDark2);
+        window.draw(choicePaddingDark1);
+        window.draw(choicePaddingDark2);
+        window.draw(choiceMarginLight1);
+        window.draw(choiceMarginLight2);
+        window.draw(choicePaddingLight1);
+        window.draw(choicePaddingLight2);
+        window.draw(selectedText);
+        button.draw(window);
+        window.draw(triangleIcon);
+        if(showChoices){
+            if(!isChoicePressed) {updateHover(window);}
+            window.draw(choiceListBody);
+            for(std::pair<sf::RectangleShape, sf::Text> choiceObject:choiceOptionsBodies){
+                window.draw(choiceObject.first);
+                window.draw(choiceObject.second);
+            }
+            
         }
-        
     }
 }
 
@@ -175,40 +193,45 @@ bool DropList::getShowChoices(){
     return showChoices;
 }
 
-bool DropList::isChoiceClicked(sf::Event& event, sf::RenderWindow& window){
-    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-    sf::Vector2f mouse(mousePos.x, mousePos.y);
+std::string DropList::getSelected(){
+    return selected;
+}
 
-    if (event.mouseButton.button == sf::Mouse::Left && showChoices){
-        if (event.type == sf::Event::MouseButtonPressed)
-        {   
-            for (auto& option : choiceOptionsBodies) {
-                sf::RectangleShape& rect = option.first;
-                if (rect.getGlobalBounds().contains(mouse)) {
-                    rect.setFillColor(sf::Color(150, 150, 255)); 
-                    isChoicePressed = true;
-                    selected = option.second.getString();
-                    return true;
+bool DropList::isChoiceClicked(sf::Event& event, sf::RenderWindow& window){
+    if(enabled){
+        sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+        sf::Vector2f mouse(mousePos.x, mousePos.y);
+
+        if (event.mouseButton.button == sf::Mouse::Left && showChoices){
+            if (event.type == sf::Event::MouseButtonPressed)
+            {   
+                for (auto& option : choiceOptionsBodies) {
+                    sf::RectangleShape& rect = option.first;
+                    if (rect.getGlobalBounds().contains(mouse)) {
+                        rect.setFillColor(theme.getMainLightColor()); 
+                        isChoicePressed = true;
+                        selected = option.second.getString();
+                        return true;
+                    }
+                } 
+                if (!button.isClicked(event,window)){
+                    showChoices = false;
                 }
-            } 
-            if (!button.isClicked(event,window)){
-                showChoices = false;
             }
-        }
-        
-        if (event.type == sf::Event::MouseButtonReleased)
-        {
-            if (isChoicePressed) {
-                isChoicePressed = false;
-                showChoices = false;
-                button.setButtonText(selected);
+            
+            if (event.type == sf::Event::MouseButtonReleased)
+            {
+                if (isChoicePressed) {
+                    isChoicePressed = false;
+                    showChoices = false;
+                    selectedText.setString(selected);
+                }
             }
-        }
-    } 
-    
+        } 
+    }
     return false;
 }
 
 bool DropList::isButtonClicked(sf::Event& event, sf::RenderWindow& window) {
-    return button.isClicked(event, window);
+    return button.isClicked(event, window) && enabled;
 }

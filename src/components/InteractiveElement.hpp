@@ -9,10 +9,14 @@ protected:
     std::pair<int, int> pos;
     std::pair<int, int> size;
 
-    // Tema compartido
+    // Estado
+    bool visible = true;
+    bool enabled = true;
+
+    // Tema
     Theme& theme;
 
-    // TextoW
+    // Texto
     sf::Text labelText;
 
     // Setup interno
@@ -37,10 +41,16 @@ public:
     virtual void setSize(std::pair<int,int> size);
     void setLabelText(const std::string& text);
 
+    void setVisible(bool value);
+    void setEnabled(bool value);
+
     // Getters
     std::pair<int,int> getPosition() const;
     std::pair<int,int> getSize() const;
     std::string getLabelText() const;
+
+    bool isVisible() const;
+    bool isEnabled() const;
 
     // Render
     virtual void draw(sf::RenderWindow& window) = 0;

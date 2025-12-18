@@ -7,7 +7,7 @@
 class DropList : public InteractiveElement {
 protected:
     std::vector<std::string> choices;
-    std::string selected;
+    std::string selected="";
     bool showChoices = false;
     bool isChoicePressed = false;
 
@@ -16,6 +16,7 @@ protected:
     sf::RectangleShape choiceBody;
     sf::RectangleShape choiceListBody;
     std::vector<std::pair<sf::RectangleShape, sf::Text>> choiceOptionsBodies;
+    sf::Text selectedText;
     sf::CircleShape triangleIcon;
 
     sf::RectangleShape choiceMarginDark1;
@@ -32,6 +33,7 @@ protected:
     void setupChoicePadding(std::pair<int,int> size, std::pair<int,int> pos);
     void setupChoiceMargins(std::pair<int,int> size, std::pair<int,int> pos);
     void setupChoiceOptionsBodies(std::pair<int,int> size, std::pair<int,int> pos);
+    void setupSelectedText(std::pair<int,int> pos);
 
 public:
     DropList(std::vector<std::string> choices, Theme& theme, std::pair<int,int> size);
@@ -42,6 +44,7 @@ public:
     void setShowChoices(bool showChoices);
 
     bool getShowChoices();
+    std::string getSelected();
 
     void updateHover(const sf::RenderWindow& window);
     void draw(sf::RenderWindow& window) override;

@@ -102,65 +102,68 @@ std::string Button::getButtonText(){
 }
 
 void Button::draw(sf::RenderWindow& window) {
-    window.draw(buttonBody);
-    window.draw(buttonText);
-    window.draw(buttonMarginDark1);
-    window.draw(buttonMarginDark2);
-    window.draw(buttonPaddingDark1);
-    window.draw(buttonPaddingDark2);
-    window.draw(buttonMarginLight1);
-    window.draw(buttonMarginLight2);
-    window.draw(buttonPaddingLight1);
-    window.draw(buttonPaddingLight2);
+    if (visible){
+        window.draw(buttonBody);
+        window.draw(buttonText);
+        window.draw(buttonMarginDark1);
+        window.draw(buttonMarginDark2);
+        window.draw(buttonPaddingDark1);
+        window.draw(buttonPaddingDark2);
+        window.draw(buttonMarginLight1);
+        window.draw(buttonMarginLight2);
+        window.draw(buttonPaddingLight1);
+        window.draw(buttonPaddingLight2);
+    }
 }
 
 bool Button::isClicked(sf::Event& event, sf::RenderWindow& window) {
-    sf::Vector2f mouse = window.mapPixelToCoords(
-        sf::Mouse::getPosition(window)
-    );
+    if(enabled){
+        sf::Vector2f mouse = window.mapPixelToCoords(
+            sf::Mouse::getPosition(window)
+        );
 
-    if (event.type == sf::Event::MouseButtonPressed &&
-        event.mouseButton.button == sf::Mouse::Left) {
+        if (event.type == sf::Event::MouseButtonPressed &&
+            event.mouseButton.button == sf::Mouse::Left) {
 
-        if (buttonBody.getGlobalBounds().contains(mouse)) {
-            isPressed = true;
+            if (buttonBody.getGlobalBounds().contains(mouse)) {
+                isPressed = true;
 
-            buttonMarginLight1.setFillColor(theme.getComponentDarkerColor());
-            buttonMarginLight2.setFillColor(theme.getComponentDarkerColor());
+                buttonMarginLight1.setFillColor(theme.getComponentDarkerColor());
+                buttonMarginLight2.setFillColor(theme.getComponentDarkerColor());
 
-            buttonPaddingLight1.setFillColor(theme.getComponentDarkColor());
-            buttonPaddingLight2.setFillColor(theme.getComponentDarkColor());
+                buttonPaddingLight1.setFillColor(theme.getComponentDarkColor());
+                buttonPaddingLight2.setFillColor(theme.getComponentDarkColor());
 
-            buttonMarginDark1.setFillColor(theme.getComponentLighterColor());
-            buttonMarginDark2.setFillColor(theme.getComponentLighterColor());
+                buttonMarginDark1.setFillColor(theme.getComponentLighterColor());
+                buttonMarginDark2.setFillColor(theme.getComponentLighterColor());
 
-            buttonPaddingDark1.setFillColor(theme.getComponentLightColor());
-            buttonPaddingDark2.setFillColor(theme.getComponentLightColor());
+                buttonPaddingDark1.setFillColor(theme.getComponentLightColor());
+                buttonPaddingDark2.setFillColor(theme.getComponentLightColor());
 
-            return true;
+                return true;
+            }
+        }
+
+        if (event.type == sf::Event::MouseButtonReleased &&
+            event.mouseButton.button == sf::Mouse::Left) {
+
+            if (isPressed) {
+                isPressed = false;
+
+                buttonMarginLight1.setFillColor(theme.getComponentLighterColor());
+                buttonMarginLight2.setFillColor(theme.getComponentLighterColor());
+
+                buttonPaddingLight1.setFillColor(theme.getComponentLightColor());
+                buttonPaddingLight2.setFillColor(theme.getComponentLightColor());
+
+                buttonMarginDark1.setFillColor(theme.getComponentDarkerColor());
+                buttonMarginDark2.setFillColor(theme.getComponentDarkerColor());
+
+                buttonPaddingDark1.setFillColor(theme.getComponentDarkColor());
+                buttonPaddingDark2.setFillColor(theme.getComponentDarkColor());
+            }
         }
     }
-
-    if (event.type == sf::Event::MouseButtonReleased &&
-        event.mouseButton.button == sf::Mouse::Left) {
-
-        if (isPressed) {
-            isPressed = false;
-
-            buttonMarginLight1.setFillColor(theme.getComponentLighterColor());
-            buttonMarginLight2.setFillColor(theme.getComponentLighterColor());
-
-            buttonPaddingLight1.setFillColor(theme.getComponentLightColor());
-            buttonPaddingLight2.setFillColor(theme.getComponentLightColor());
-
-            buttonMarginDark1.setFillColor(theme.getComponentDarkerColor());
-            buttonMarginDark2.setFillColor(theme.getComponentDarkerColor());
-
-            buttonPaddingDark1.setFillColor(theme.getComponentDarkColor());
-            buttonPaddingDark2.setFillColor(theme.getComponentDarkColor());
-        }
-    }
-
     return false;
 }
 

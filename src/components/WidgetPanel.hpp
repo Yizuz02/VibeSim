@@ -9,6 +9,7 @@ class WidgetPanel {
 private:
     std::pair<int,int> pos;
     std::pair<int,int> size;
+    bool visible = true;
 
     int topPadding = 0;
     int bottomPadding = 0;
@@ -56,6 +57,8 @@ public:
 
     // Gap
     void setGap(int gap);
+
+    void setVisible(bool value);
 
     // Elementos
     void addElement(InteractiveElement& element);

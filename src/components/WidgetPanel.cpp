@@ -97,6 +97,13 @@ void WidgetPanel::setGap(int gap) {
     this->gap = gap;
 }
 
+void WidgetPanel::setVisible(bool value){
+    visible=value;
+    for (InteractiveElement* element : interactiveElementList) {
+        element->setVisible(value);
+    }
+}
+
 // --------------------
 // Elementos
 // --------------------
@@ -128,10 +135,12 @@ void WidgetPanel::addElement(InteractiveElement& element) {
 // --------------------
 
 void WidgetPanel::draw(sf::RenderWindow& window) {
-    window.draw(widgetPanelBody);
-    window.draw(widgetPanelBottomMargin);
+    if(visible){
+        window.draw(widgetPanelBody);
+        window.draw(widgetPanelBottomMargin);
 
-    for (InteractiveElement* element : interactiveElementList) {
-        element->draw(window);
+        for (InteractiveElement* element : interactiveElementList) {
+            element->draw(window);
+        }
     }
 }

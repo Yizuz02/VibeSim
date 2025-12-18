@@ -39,30 +39,30 @@ Theme::Theme(const sf::Color& component,
 
 void Theme::generateComponentVariations() {
     darkColor    = ColorUtils::darker(componentColor, 0.85f);
-    darkerColor  = ColorUtils::darker(componentColor, 0.6f);
+    darkerColor  = ColorUtils::darker(componentColor, 0.3f);
     lightColor   = ColorUtils::lighter(componentColor, 1.15f);
-    lighterColor = ColorUtils::lighter(componentColor, 1.35f);
+    lighterColor = ColorUtils::lighter(componentColor, 2.2f);
 }
 
 void Theme::generateMainVariations() {
     mainDarkColor    = ColorUtils::darker(mainColor, 0.85f);
-    mainDarkerColor  = ColorUtils::darker(mainColor, 0.6f);
+    mainDarkerColor  = ColorUtils::darker(mainColor, 0.3f);
     mainLightColor   = ColorUtils::lighter(mainColor, 1.15f);
-    mainLighterColor = ColorUtils::lighter(mainColor, 1.35f);
+    mainLighterColor = ColorUtils::lighter(mainColor, 2.2f);
 }
 
 void Theme::generateSecondaryVariations() {
     secondaryDarkColor    = ColorUtils::darker(secondaryColor, 0.85f);
-    secondaryDarkerColor  = ColorUtils::darker(secondaryColor, 0.6f);
+    secondaryDarkerColor  = ColorUtils::darker(secondaryColor, 0.3f);
     secondaryLightColor   = ColorUtils::lighter(secondaryColor, 1.15f);
-    secondaryLighterColor = ColorUtils::lighter(secondaryColor, 1.35f);
+    secondaryLighterColor = ColorUtils::lighter(secondaryColor, 2.2f);
 }
 
 void Theme::generateInputVariations() {
     inputDarkColor    = ColorUtils::darker(inputColor, 0.85f);
-    inputDarkerColor  = ColorUtils::darker(inputColor, 0.6f);
+    inputDarkerColor  = ColorUtils::darker(inputColor, 0.3f);
     inputLightColor   = ColorUtils::lighter(inputColor, 1.15f);
-    inputLighterColor = ColorUtils::lighter(inputColor, 1.35f);
+    inputLighterColor = ColorUtils::lighter(inputColor, 2.2f);
 }
 
 // Getters

@@ -51,13 +51,23 @@ void InteractiveElement::setPosition(std::pair<int,int> newPos) {
 void InteractiveElement::setSize(std::pair<int,int> newSize) {
     size = newSize;
 
-    // Ajusta el texto al nuevo tamaño
     labelText.setCharacterSize(static_cast<unsigned int>(size.second * 0.5f));
 }
 
 void InteractiveElement::setLabelText(const std::string& newText) {
     labelText.setString(newText);
 }
+
+
+void InteractiveElement::setVisible(bool value) {
+    enabled = value;
+    visible = value;
+}
+
+void InteractiveElement::setEnabled(bool value) {
+    enabled = value;
+}
+
 
 // Getters
 
@@ -71,4 +81,12 @@ std::pair<int,int> InteractiveElement::getSize() const {
 
 std::string InteractiveElement::getLabelText() const {
     return labelText.getString();
+}
+
+bool InteractiveElement::isVisible() const {
+    return visible;
+}
+
+bool InteractiveElement::isEnabled() const {
+    return enabled;
 }
