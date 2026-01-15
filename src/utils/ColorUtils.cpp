@@ -21,12 +21,24 @@ namespace ColorUtils {
         if (factor <= 1.f)
             factor = 1.3f;
 
-        return sf::Color(
+        if (color.r == 0 && color.g == 0 && color.b==0){
+            return sf::Color(
+            static_cast<sf::Uint8>(std::min(255, int(10 * factor))),
+            static_cast<sf::Uint8>(std::min(255, int(10 * factor))),
+            static_cast<sf::Uint8>(std::min(255, int(10 * factor))),
+            color.a
+            );
+        } else {
+            return sf::Color(
             static_cast<sf::Uint8>(std::min(255, int(color.r * factor))),
             static_cast<sf::Uint8>(std::min(255, int(color.g * factor))),
             static_cast<sf::Uint8>(std::min(255, int(color.b * factor))),
             color.a
-        );
+            );
+        }
+         
+
+        
     }
 
 }

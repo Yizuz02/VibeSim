@@ -8,6 +8,7 @@ private:
     sf::Color mainColor;
     sf::Color secondaryColor;
     sf::Color fontColor;
+    sf::Color disabledFontColor;
     sf::Color inputColor;
 
     // 🔹 Variaciones component
@@ -79,6 +80,7 @@ public:
     const sf::Color& getInputLighterColor() const;
 
     const sf::Color& getFontColor() const;
+    const sf::Color& getDisabledFontColor() const;
     const sf::Font& getFont() const;
 
     // 🔹 Setters

@@ -37,12 +37,18 @@ int main() {
     int widthWindow=1600;
     int heightWindow=900;
     sf::Vector2i positionWindow;
+    
+    bool toggleMoveView=false;
+    bool isDragging = false;
+
+    bool pause = false;
+    bool start = false;
 
     sf::Font font;
     font.loadFromFile("resources/fonts/W95FA.otf");
 
     std::uniform_int_distribution<int> dist(-1, 1);
-    sf::RenderWindow window(sf::VideoMode(widthWindow, heightWindow), "Simulador 2D", sf::Style::None);
+    sf::RenderWindow window(sf::VideoMode(widthWindow, heightWindow), "VibeSim", sf::Style::None);
     positionWindow = window.getPosition();
 
     Theme themeW95(sf::Color(190, 190, 190), sf::Color(8, 39, 245), sf::Color(255, 255, 0), sf::Color::White, sf::Color::Black, font);
@@ -54,17 +60,19 @@ int main() {
     Button buttonObstacles("Obstacles", themeW95, {90,50});
     Button buttonPopulation("Population", themeW95, {90,50});
     Button buttonGoals("Goals", themeW95, {90,50});
+    Button buttonSimulation("Simulation", themeW95, {90,50});
     Button buttonAppearance("Appearance", themeW95, {90,50});
     WidgetPanel menuPanel(sf::Color(190, 190, 190), {1600,34}, {0,34}, 1, 2);
     menuPanel.addElement(buttonSpace);
     menuPanel.addElement(buttonObstacles);
     menuPanel.addElement(buttonPopulation);
     menuPanel.addElement(buttonGoals);
+    menuPanel.addElement(buttonSimulation);
     menuPanel.addElement(buttonAppearance);
 
     //Creacion del Panel Space
-    NumericInput inputSpaceHeight(200, 900, 600, themeW95, {100,40});
-    NumericInput inputSpaceWidth(200, 1600, 900, themeW95, {100,40});
+    NumericInput inputSpaceHeight(200, 10000, 600, themeW95, {100,40});
+    NumericInput inputSpaceWidth(200, 10000, 900, themeW95, {100,40});
     Button buttonCreateSpace("Create Space", themeW95, {120,40});
 
     WidgetPanel spacePanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
@@ -88,6 +96,8 @@ int main() {
     obstaclesPanel.addElement(buttonDeleteObstacle);
     obstaclesPanel.addElement(buttonClearObstacles);
     obstaclesPanel.setVisible(false);
+    buttonDeleteObstacle.setEnabled(false);
+    buttonClearObstacles.setEnabled(false);
 
     //Creacion del Panel Population
     NumericInput inputPopulationSize(1, 5000, themeW95, {100,40});
@@ -103,14 +113,38 @@ int main() {
     populationPanel.addElement(buttonDeleteIndividual);
     populationPanel.addElement(buttonDeletePopulation);
     populationPanel.setVisible(false);
+    buttonDeleteIndividual.setEnabled(false);
+    buttonDeletePopulation.setEnabled(false);
+
+    //Creacion del Panel Simulation
+    Button buttonStart("Start", themeW95, {100,40});
+    Button buttonPause("Pause", themeW95, {100,40});
+    Button buttonStop("Stop", themeW95, {100,40});
+
+    WidgetPanel simulationPanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    simulationPanel.addElement(buttonStart);
+    simulationPanel.addElement(buttonPause);
+    simulationPanel.addElement(buttonStop);
+    simulationPanel.setVisible(false);
+    buttonStop.setEnabled(false);
 
     //Creacion del Panel Appearance
     DropList inputThemes({"Windows 95", "Coral", "Rose"}, themeW95, {170,40});
     Button buttonApplyTheme("Apply Theme", themeW95, {120,40});
+    Button buttonZoomIn("Zoom In", themeW95, {80,40});
+    Button buttonZoomOut("Zoom Out", themeW95, {80,40});
+    Button buttonResetZoom("Reset Zoom", themeW95, {80,40});
+    Button buttonToggleMoveView("Toggle Move View", themeW95, {120,40});
+    Button buttonCenterView("Center View", themeW95, {120,40});
 
     WidgetPanel appearancePanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
     appearancePanel.addElement(inputThemes);
     appearancePanel.addElement(buttonApplyTheme);
+    appearancePanel.addElement(buttonZoomIn);
+    appearancePanel.addElement(buttonZoomOut);
+    appearancePanel.addElement(buttonResetZoom);
+    appearancePanel.addElement(buttonToggleMoveView);
+    appearancePanel.addElement(buttonCenterView);
     appearancePanel.setVisible(false);
     
 
@@ -126,9 +160,23 @@ int main() {
     long selectedObstacle = -1;
     std::map<long,std::pair<int,int>> directions;
     int numThreads = 8;
+    //Population populationOriginal = population;
     
     const float speed = 1; 
     sf::Clock clock;
+
+    sf::View simView;
+    simView.setSize(widthWindow, heightWindow);
+    simView.setCenter(widthWindow/2, heightWindow/2);
+    simView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
+    sf::View simViewOriginal = simView;
+
+    sf::View hudView;
+    hudView.setSize(widthWindow, heightWindow);
+    hudView.setCenter(widthWindow/2, heightWindow/2);
+    hudView.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
+
+    sf::Vector2f lastMouseWorldPos;
 
     while (window.isOpen()) {
 
@@ -136,8 +184,7 @@ int main() {
         float dt = 0.016f;
 
         // Obtener posición del mouse
-        sf::Vector2f mouse = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
+        sf::Vector2f mouse = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y},simView);
 
         // ---------------------------------
         //        MANEJO DE EVENTOS
@@ -149,11 +196,30 @@ int main() {
             
             titleBar.handleWindowControls(event, window);
 
+            if (event.type == sf::Event::MouseWheelScrolled)
+            {
+                if (event.mouseWheelScroll.delta > 0)
+                    simView.zoom(0.9f);   // zoom in
+                else
+                    simView.zoom(1.1f);   // zoom out
+            }
+
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && toggleMoveView){
+                isDragging = true;
+                lastMouseWorldPos = window.mapPixelToCoords(
+                    {event.mouseButton.x, event.mouseButton.y},
+                    simView
+                );
+            }
+                
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+                isDragging = false;
 
             if (event.type == sf::Event::MouseButtonPressed &&
                 event.mouseButton.button == sf::Mouse::Left)
             {
-                long clickedInd = population.getIndividualAt(mouse.x, mouse.y);
+                sf::Vector2f worldPos = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y}, simView);
+                long clickedInd = population.getIndividualAt(worldPos.x, worldPos.y);
                 if (clickedInd!=-1) {
                     if(selectedIndividual!=-1)
                         population.getIndividual(selectedIndividual)->getShape().setFillColor(themeW95.getMainColor());
@@ -164,7 +230,7 @@ int main() {
                         population.getIndividual(selectedIndividual)->getShape().setFillColor(sf::Color::Red);
                     }
                 }
-                long clickedObs = obstacles.getObstacleAt(mouse.x, mouse.y);
+                long clickedObs = obstacles.getObstacleAt(worldPos.x, worldPos.y);
                 if (clickedObs!=-1) {
                     if(selectedObstacle!=-1)
                         obstacles.getObstacle(selectedObstacle)->shape->setFillColor(themeW95.getSecondaryColor());
@@ -186,26 +252,38 @@ int main() {
                 populationPanel.setVisible(false);
                 obstaclesPanel.setVisible(false);
                 spacePanel.setVisible(true);
+                simulationPanel.setVisible(false);
                 appearancePanel.setVisible(false);
             }
             if(buttonObstacles.isClicked(event,window)){
                 populationPanel.setVisible(false);
                 obstaclesPanel.setVisible(true);
                 spacePanel.setVisible(false);
+                simulationPanel.setVisible(false);
                 appearancePanel.setVisible(false);
             }
             if(buttonPopulation.isClicked(event,window)){
                 populationPanel.setVisible(true);
                 obstaclesPanel.setVisible(false);
                 spacePanel.setVisible(false);
+                simulationPanel.setVisible(false);
+                appearancePanel.setVisible(false);
+            }
+            if(buttonSimulation.isClicked(event, window)){
+                populationPanel.setVisible(false);
+                obstaclesPanel.setVisible(false);
+                spacePanel.setVisible(false);
+                simulationPanel.setVisible(true);
                 appearancePanel.setVisible(false);
             }
             if(buttonAppearance.isClicked(event,window)){
                 populationPanel.setVisible(false);
                 obstaclesPanel.setVisible(false);
                 spacePanel.setVisible(false);
+                simulationPanel.setVisible(false);
                 appearancePanel.setVisible(true);
             }
+            
 
             // ---------------------------------
             //        SPACE PANEL
@@ -306,7 +384,34 @@ int main() {
             if (buttonDeletePopulation.isClicked(event, window) && populationSize>0) {
                 population.clear();
                 populationSize=0;
+                selectedIndividual = -1;
             }
+
+            // ---------------------------------
+            //        SIMULATION PANEL
+            // ---------------------------------
+
+            if (buttonStart.isClicked(event, window)){
+                start = true;
+                buttonStart.setEnabled(false);
+                buttonStop.setEnabled(true);
+            }
+
+            if (buttonPause.isClicked(event, window)){
+                pause = !pause;
+                if(pause){
+                    buttonPause.setButtonText("Resume");
+                } else {
+                    buttonPause.setButtonText("Pause");
+                }
+            }
+
+            if (buttonStop.isClicked(event, window)){
+                start = false;
+                buttonStart.setEnabled(true);
+                buttonStop.setEnabled(false);
+            }
+
 
             // ---------------------------------
             //        APPEARANCE PANEL
@@ -318,59 +423,92 @@ int main() {
             if(inputThemes.isChoiceClicked(event,window)){
 
             }
+
+            if (buttonZoomIn.isClicked(event, window)){
+                simView.zoom(0.9f);
+            }
+            if (buttonZoomOut.isClicked(event, window)){
+                simView.zoom(1.1f);   // zoom out
+            }
+            if (buttonResetZoom.isClicked(event, window)){
+                simView.setSize(simViewOriginal.getSize());
+            }
+            if (buttonToggleMoveView.isClicked(event, window)){
+                sf::Cursor cursor;
+                toggleMoveView = !toggleMoveView;
+                if (toggleMoveView)
+                    cursor.loadFromSystem(sf::Cursor::Hand);
+                else
+                    cursor.loadFromSystem(sf::Cursor::Arrow);
+                window.setMouseCursor(cursor);
+            }
+            if (buttonCenterView.isClicked(event, window)){
+                simView.setCenter(simViewOriginal.getCenter());
+            }
             
         }
 
         // ---------------------------------
         //       MOVIMIENTO CONTINUO
         // ---------------------------------
-        for (auto& [id, ind] : population.getIndividuals()) {
-            std::uniform_real_distribution<float> prob(0.00f, 1.00f);
-            if (prob(gen) < 0.0001f) { 
-                int directionx = 0;
-                int directiony = 0;
-                do{
-                    directionx = dist(gen);
-                    directiony = dist(gen);
-                } while (directionx==0 && directiony==0);
-                directions[id]={directionx,directiony};
+        if(start && !pause){
+            for (auto& [id, ind] : population.getIndividuals()) {
+                std::uniform_real_distribution<float> prob(0.00f, 1.00f);
+                if (prob(gen) < 0.0001f) { 
+                    int directionx = 0;
+                    int directiony = 0;
+                    do{
+                        directionx = dist(gen);
+                        directiony = dist(gen);
+                    } while (directionx==0 && directiony==0);
+                    directions[id]={directionx,directiony};
+                }
+                float dx = directions[id].first * speed * dt;
+                float dy = directions[id].second * speed * dt;
+                if(!ind->move(dx,dy)){
+                    int directionx = 0;
+                    int directiony = 0;
+                    do{
+                        directionx = dist(gen);
+                        directiony = dist(gen);
+                    } while (directionx==0 && directiony==0);
+                    directions[id]={directionx,directiony};
+                };
             }
-            float dx = directions[id].first * speed * dt;
-            float dy = directions[id].second * speed * dt;
-            if(!ind->move(dx,dy)){
-                int directionx = 0;
-                int directiony = 0;
-                do{
-                    directionx = dist(gen);
-                    directiony = dist(gen);
-                } while (directionx==0 && directiony==0);
-                directions[id]={directionx,directiony};
-            };
-        }
-            
+        }   
      
         if (window.hasFocus()) {  // evita movimiento si la ventana no está activa
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            if (isDragging){
+                sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                sf::Vector2f currentMouseWorldPos =
+                    window.mapPixelToCoords(pixelPos, simView);
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                sf::Vector2f delta = lastMouseWorldPos - currentMouseWorldPos;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                simView.move(delta);
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-                std::cout<<"Hola\n";
+                lastMouseWorldPos = window.mapPixelToCoords(
+                    sf::Mouse::getPosition(window),
+                    simView
+                );
+            }
         }
 
         // ---------------------------------
         //              RENDER
         // ---------------------------------
-        window.clear(sf::Color::White);    
+        window.clear(sf::Color::White);   
+        window.setView(simView); 
         space.draw(); 
         obstacles.draw();
         population.draw();
+
+        window.setView(hudView); 
         menuPanel.draw(window);
         spacePanel.draw(window);
         populationPanel.draw(window);
         obstaclesPanel.draw(window);
+        simulationPanel.draw(window);
         appearancePanel.draw(window);
         titleBar.draw(window);
         window.display();

@@ -28,14 +28,8 @@ Space::Space(int topBoundary,
       window(window),
       collisions(&collisions)
 {
-    background.setSize(sf::Vector2f(size.first, size.second));
     background.setFillColor(backgroundColor);
-
-    int y = (window.getSize().y - topBoundary - size.second) / 2 + topBoundary;
-    int x = (window.getSize().x - size.first) / 2;
-
-    pos = {x, y};
-    background.setPosition(pos.first, pos.second);
+    setSize(size);
 }
 
 
@@ -46,12 +40,19 @@ void Space::setPosition(std::pair<int,int> pos) {
 
 void Space::setSize(std::pair<int,int> size) {
     this->size = size;
-    background.setSize(sf::Vector2f(size.first, size.second));
-    int y = (window.getSize().y - topBoundary - size.second) / 2 + topBoundary;
-    int x = (window.getSize().x - size.first) / 2;
+    background.setSize(
+        sf::Vector2f(static_cast<float>(size.first),
+                     static_cast<float>(size.second))
+    );
+   
+    sf::View view = window.getView();
+    sf::Vector2f center = view.getCenter();
+    sf::Vector2f viewSize = view.getSize();
 
-    pos = {x, y};
-    background.setPosition(pos.first, pos.second);
+    int x = static_cast<int>(center.x - size.first / 2.f);
+    int y = static_cast<int>(center.y - (size.second + topBoundary) / 2.f + topBoundary);
+
+    setPosition({x, y});
 }
 
 void Space::setBackgroundColor(const sf::Color& color) {

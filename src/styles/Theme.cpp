@@ -33,6 +33,7 @@ Theme::Theme(const sf::Color& component,
     generateMainVariations();
     generateSecondaryVariations();
     generateInputVariations();
+    disabledFontColor = ColorUtils::lighter(fontColor, 10.f);
 }
 
 // Generadores internos
@@ -92,7 +93,8 @@ const sf::Color& Theme::getInputDarkerColor() const { return inputDarkerColor; }
 const sf::Color& Theme::getInputLighterColor() const { return inputLighterColor; }
 
 const sf::Color& Theme::getFontColor() const { return fontColor; }
-const sf::Font& Theme::getFont() const { return font; }
+const sf::Color &Theme::getDisabledFontColor() const{ return disabledFontColor;}
+const sf::Font &Theme::getFont() const { return font; }
 
 // 🔹 Setters
 

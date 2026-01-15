@@ -60,7 +60,6 @@ void InteractiveElement::setLabelText(const std::string& newText) {
 
 
 void InteractiveElement::setVisible(bool value) {
-    enabled = value;
     visible = value;
 }
 

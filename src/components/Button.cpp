@@ -82,6 +82,15 @@ void Button::setPosition(std::pair<int,int> pos) {
     buttonText.setPosition(sf::Vector2f(pos.first+8, pos.second+((size.second-buttonText.getGlobalBounds().height)/3)));
 }
 
+void Button::setEnabled(bool value){
+    enabled = value;
+    if(value){
+        buttonText.setFillColor(theme.getFontColor());
+    } else {
+        buttonText.setFillColor(theme.getDisabledFontColor());
+    }
+}
+
 void Button::setSize(std::pair<int,int> size) {
     this->size = size;
     setupButtonBody(size, pos);
@@ -117,7 +126,7 @@ void Button::draw(sf::RenderWindow& window) {
 }
 
 bool Button::isClicked(sf::Event& event, sf::RenderWindow& window) {
-    if(enabled){
+    if(enabled && visible){
         sf::Vector2f mouse = window.mapPixelToCoords(
             sf::Mouse::getPosition(window)
         );
@@ -143,25 +152,24 @@ bool Button::isClicked(sf::Event& event, sf::RenderWindow& window) {
                 return true;
             }
         }
+    }
+    if (event.type == sf::Event::MouseButtonReleased &&
+        event.mouseButton.button == sf::Mouse::Left) {
+        
+        if (isPressed) {
+            isPressed = false;
 
-        if (event.type == sf::Event::MouseButtonReleased &&
-            event.mouseButton.button == sf::Mouse::Left) {
+            buttonMarginLight1.setFillColor(theme.getComponentLighterColor());
+            buttonMarginLight2.setFillColor(theme.getComponentLighterColor());
 
-            if (isPressed) {
-                isPressed = false;
+            buttonPaddingLight1.setFillColor(theme.getComponentLightColor());
+            buttonPaddingLight2.setFillColor(theme.getComponentLightColor());
 
-                buttonMarginLight1.setFillColor(theme.getComponentLighterColor());
-                buttonMarginLight2.setFillColor(theme.getComponentLighterColor());
+            buttonMarginDark1.setFillColor(theme.getComponentDarkerColor());
+            buttonMarginDark2.setFillColor(theme.getComponentDarkerColor());
 
-                buttonPaddingLight1.setFillColor(theme.getComponentLightColor());
-                buttonPaddingLight2.setFillColor(theme.getComponentLightColor());
-
-                buttonMarginDark1.setFillColor(theme.getComponentDarkerColor());
-                buttonMarginDark2.setFillColor(theme.getComponentDarkerColor());
-
-                buttonPaddingDark1.setFillColor(theme.getComponentDarkColor());
-                buttonPaddingDark2.setFillColor(theme.getComponentDarkColor());
-            }
+            buttonPaddingDark1.setFillColor(theme.getComponentDarkColor());
+            buttonPaddingDark2.setFillColor(theme.getComponentDarkColor());
         }
     }
     return false;

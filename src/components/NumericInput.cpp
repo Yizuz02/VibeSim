@@ -192,7 +192,7 @@ void NumericInput::draw(sf::RenderWindow& window) {
 
 
 bool NumericInput::isUpButtonClicked(sf::Event& event, sf::RenderWindow& window) {
-    if(enabled){
+    if(enabled && visible){
         if(upButton.isClicked(event, window)){
             if(value<maxValue){
                 value++;
@@ -207,7 +207,7 @@ bool NumericInput::isUpButtonClicked(sf::Event& event, sf::RenderWindow& window)
 }
 
 bool NumericInput::isDownButtonClicked(sf::Event& event, sf::RenderWindow& window) {
-    if(enabled){
+    if(enabled && visible){
         if(downButton.isClicked(event, window)){
             if(value>minValue){
                 value--;

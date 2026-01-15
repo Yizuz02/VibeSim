@@ -42,7 +42,7 @@ public:
     void setLabelText(const std::string& text);
 
     void setVisible(bool value);
-    void setEnabled(bool value);
+    virtual void setEnabled(bool value);
 
     // Getters
     std::pair<int,int> getPosition() const;
