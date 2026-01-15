@@ -22,22 +22,18 @@ private:
     sf::RectangleShape widgetPanelBody;
     sf::RectangleShape widgetPanelBottomMargin;
 
-    sf::Color mainColor;
-    sf::Color darkColor;
-    sf::Color lightColor;
-
-    // Setup interno
-    void setupColors(const sf::Color& main);
+    // Tema
+    Theme& theme;
 
 public:
     // Constructores
-    WidgetPanel(const sf::Color& mainColor,
+    WidgetPanel(Theme& theme,
                 std::pair<int,int> size,
                 std::pair<int,int> pos,
                 int gap,
                 int padding);
 
-    WidgetPanel(const sf::Color& mainColor,
+    WidgetPanel(Theme& theme,
                 std::pair<int,int> size,
                 std::pair<int,int> pos,
                 int gap,
@@ -58,6 +54,7 @@ public:
     // Gap
     void setGap(int gap);
 
+    void setTheme(Theme& theme);
     void setVisible(bool value);
 
     // Elementos

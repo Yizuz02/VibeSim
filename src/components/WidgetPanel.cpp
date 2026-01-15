@@ -1,37 +1,29 @@
 #include "WidgetPanel.hpp"
-
-void WidgetPanel::setupColors(const sf::Color& main) {
-    mainColor = main;
-    darkColor = ColorUtils::darker(mainColor, 0.5f);
-    lightColor = ColorUtils::lighter(mainColor, 1.1f);
-}
-
 // --------------------
 // Constructores
 // --------------------
 
-WidgetPanel::WidgetPanel(const sf::Color& mainColor,
+WidgetPanel::WidgetPanel(Theme& theme,
                          std::pair<int,int> size,
                          std::pair<int,int> pos,
                          int gap,
                          int padding)
-    : pos(pos), size(size), gap(gap) {
+    : pos(pos), size(size), gap(gap), theme(theme) {
 
     setPadding(padding);
-    setupColors(mainColor);
 
     widgetPanelBody.setSize(sf::Vector2f(size.first, size.second));
     widgetPanelBody.setPosition(sf::Vector2f(pos.first, pos.second));
-    widgetPanelBody.setFillColor(this->mainColor);
+    widgetPanelBody.setFillColor(theme.getComponentColor());
 
     widgetPanelBottomMargin.setSize(sf::Vector2f(size.first, 2));
     widgetPanelBottomMargin.setPosition(
         sf::Vector2f(pos.first, pos.second + size.second - 2)
     );
-    widgetPanelBottomMargin.setFillColor(lightColor);
+    widgetPanelBottomMargin.setFillColor(theme.getComponentLightColor());
 }
 
-WidgetPanel::WidgetPanel(const sf::Color& mainColor,
+WidgetPanel::WidgetPanel(Theme& theme,
                          std::pair<int,int> size,
                          std::pair<int,int> pos,
                          int gap,
@@ -39,20 +31,19 @@ WidgetPanel::WidgetPanel(const sf::Color& mainColor,
                          int bottomPadding,
                          int leftPadding,
                          int rightPadding)
-    : pos(pos), size(size), gap(gap) {
+    : pos(pos), size(size), gap(gap), theme(theme) {
 
     setPadding(topPadding, bottomPadding, leftPadding, rightPadding);
-    setupColors(mainColor);
 
     widgetPanelBody.setSize(sf::Vector2f(size.first, size.second));
     widgetPanelBody.setPosition(sf::Vector2f(pos.first, pos.second));
-    widgetPanelBody.setFillColor(this->mainColor);
+    widgetPanelBody.setFillColor(theme.getComponentColor());
 
     widgetPanelBottomMargin.setSize(sf::Vector2f(size.first, 2));
     widgetPanelBottomMargin.setPosition(
         sf::Vector2f(pos.first, pos.second + size.second - 2)
     );
-    widgetPanelBottomMargin.setFillColor(lightColor);
+    widgetPanelBottomMargin.setFillColor(theme.getComponentLightColor());
 }
 
 // --------------------
@@ -97,7 +88,19 @@ void WidgetPanel::setGap(int gap) {
     this->gap = gap;
 }
 
-void WidgetPanel::setVisible(bool value){
+void WidgetPanel::setTheme(Theme &theme){
+    this->theme = theme;
+
+    widgetPanelBody.setFillColor(theme.getComponentColor());
+    widgetPanelBottomMargin.setFillColor(theme.getComponentLightColor());
+    
+    for (InteractiveElement* element : interactiveElementList) {
+        element->setTheme(theme);
+    }
+}
+
+void WidgetPanel::setVisible(bool value)
+{
     visible=value;
     for (InteractiveElement* element : interactiveElementList) {
         element->setVisible(value);

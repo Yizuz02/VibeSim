@@ -41,4 +41,12 @@ namespace ColorUtils {
         
     }
 
+    sf::Color colorFromJson(const json& j)
+    {
+        return sf::Color(
+            j.at(0).get<uint8_t>(),
+            j.at(1).get<uint8_t>(),
+            j.at(2).get<uint8_t>()
+        );
+    }
 }

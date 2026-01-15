@@ -36,6 +36,7 @@ public:
     void setSize(std::pair<int,int> pos) override;
     void setPosition(std::pair<int,int> pos) override;
     void setEnabled(bool value) override;
+    void setTheme(Theme& theme) override;
     void setButtonText(std::string text);
 
     std::string getButtonText();

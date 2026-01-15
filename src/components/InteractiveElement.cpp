@@ -58,6 +58,9 @@ void InteractiveElement::setLabelText(const std::string& newText) {
     labelText.setString(newText);
 }
 
+void InteractiveElement::setTheme(Theme &theme){
+    this->theme = theme;
+}
 
 void InteractiveElement::setVisible(bool value) {
     visible = value;

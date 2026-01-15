@@ -1,0 +1,9 @@
+{
+  "name": "Dark Slate",
+  "componentColor": [60, 60, 65],
+  "mainColor": [40, 44, 52],
+  "secondaryColor": [98, 114, 164],
+  "inputColor": [30, 30, 35],
+  "fontColor": [220, 220, 220],
+  "fontPath": "resources/fonts/W95FA.otf"
+}

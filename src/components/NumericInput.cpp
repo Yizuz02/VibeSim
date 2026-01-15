@@ -166,6 +166,16 @@ void NumericInput::setSize(std::pair<int,int> size) {
     setupValueText();
 }
 
+void NumericInput::setTheme(Theme &theme){
+    this->theme = theme;
+    setupInputBody();
+    setupInputPadding();
+    setupInputMargins();
+    setupValueText();
+    upButton.setTheme(theme);
+    downButton.setTheme(theme);
+}
+
 int NumericInput::getValue(){
     return value;
 }

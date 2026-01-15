@@ -37,6 +37,8 @@ private:
 public:
     TitleBar(Theme& theme, std::pair<int,int> size);
 
+    void setTheme(Theme& theme);
+
     bool closeButtonPressed(sf::Event& event, sf::RenderWindow& window);
     bool resizeButtonPressed(sf::Event& event, sf::RenderWindow& window);
     bool minimizeButtonPressed(sf::Event& event, sf::RenderWindow& window);

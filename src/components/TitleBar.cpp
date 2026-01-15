@@ -1,13 +1,14 @@
 #include "TitleBar.hpp"
+#include <iostream>
 
 TitleBar::TitleBar(Theme& theme, std::pair<int,int> size)
     : size(size),
       theme(theme),
-      closeButton("", theme, {size.second - 4, size.second - 4},
+      closeButton(" ", theme, {size.second - 4, size.second - 4},
                   {size.first - (size.second + 2), 2}),
-      resizeButton("", theme, {size.second - 4, size.second - 4},
+      resizeButton(" ", theme, {size.second - 4, size.second - 4},
                    {size.first - (size.second + 2) * 2, 2}),
-      minimizeButton("", theme, {size.second - 4, size.second - 4},
+      minimizeButton(" ", theme, {size.second - 4, size.second - 4},
                      {size.first - (size.second + 2) * 3, 2}),
       crossLine1(sf::Vector2f(size.second - 12, 3)),
       crossLine2(sf::Vector2f(size.second - 12, 3)),
@@ -44,6 +45,19 @@ TitleBar::TitleBar(Theme& theme, std::pair<int,int> size)
     resizeMaxTop.setFillColor(color);
 }
 
+void TitleBar::setTheme(Theme &theme){
+    this->theme = theme;
+    titleBarBody.setFillColor(theme.getMainColor());
+    closeButton.setTheme(theme);
+    closeButton.setSize({size.second - 4, size.second - 4});
+    closeButton.setPosition({size.first - (size.second + 2), 2});
+    resizeButton.setTheme(theme);
+    resizeButton.setSize({size.second - 4, size.second - 4});
+    resizeButton.setPosition({size.first - (size.second + 2) * 2, 2});
+    minimizeButton.setTheme(theme);
+    minimizeButton.setSize({size.second - 4, size.second - 4});
+    minimizeButton.setPosition({size.first - (size.second + 2) * 3, 2});
+}
 
 void TitleBar::setupTitleBarBody() {
     titleBarBody.setSize(sf::Vector2f(size.first, size.second));

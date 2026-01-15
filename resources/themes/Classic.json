@@ -1,0 +1,9 @@
+{
+  "name": "Classic",
+  "componentColor": [190, 190, 190],
+  "mainColor": [8, 39, 245],
+  "secondaryColor": [255, 255, 0],
+  "inputColor": [255, 255, 255],
+  "fontColor": [0, 0, 0],
+  "fontPath": "resources/fonts/W95FA.otf"
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Mint",
+  "componentColor": [170, 230, 210],
+  "mainColor": [102, 205, 170],
+  "secondaryColor": [60, 179, 113],
+  "inputColor": [245, 255, 250],
+  "fontColor": [20, 60, 50],
+  "fontPath": "resources/fonts/W95FA.otf"
+}

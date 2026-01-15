@@ -1,5 +1,12 @@
 #include "Theme.hpp"
 #include "../utils/ColorUtils.hpp"
+#include <string>
+#include <fstream>
+#include <stdexcept>
+#include <filesystem>
+#include <nlohmann/json.hpp>
+
+namespace fs = std::filesystem;
 
 // Constructores
 
@@ -35,6 +42,66 @@ Theme::Theme(const sf::Color& component,
     generateInputVariations();
     disabledFontColor = ColorUtils::lighter(fontColor, 10.f);
 }
+
+Theme Theme::loadFromJson(const std::string& path)
+{
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("No se pudo abrir el archivo de tema: " + path);
+    }
+
+    json j;
+    file >> j;
+
+    // Colores
+    sf::Color componentColor  = ColorUtils::colorFromJson(j.at("componentColor"));
+    sf::Color mainColor       = ColorUtils::colorFromJson(j.at("mainColor"));
+    sf::Color secondaryColor  = ColorUtils::colorFromJson(j.at("secondaryColor"));
+    sf::Color inputColor      = ColorUtils::colorFromJson(j.at("inputColor"));
+    sf::Color fontColor       = ColorUtils::colorFromJson(j.at("fontColor"));
+
+    // Fuente
+    sf::Font font;
+    std::string fontPath = j.at("fontPath").get<std::string>();
+
+    if (!font.loadFromFile(fontPath)) {
+        throw std::runtime_error("No se pudo cargar la fuente: " + fontPath);
+    }
+
+    // Construcción final
+    return Theme(
+        componentColor,
+        mainColor,
+        secondaryColor,
+        inputColor,
+        fontColor,
+        font
+    );
+}
+
+std::unordered_map<std::string, Theme>
+Theme::loadAllFromFolder(const std::string& folderPath) {
+
+    std::unordered_map<std::string, Theme> themes;
+
+    for (const auto& entry : fs::directory_iterator(folderPath)) {
+        if (entry.path().extension() == ".json") {
+
+            std::ifstream file(entry.path());
+            json j;
+            file >> j;
+
+            std::string name = j.value("name", entry.path().stem().string());
+
+            Theme theme = Theme::loadFromJson(entry.path().string());
+
+            themes.emplace(name, std::move(theme));
+        }
+    }
+
+    return themes;
+}
+
 
 // Generadores internos
 

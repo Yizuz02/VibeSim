@@ -41,6 +41,7 @@ public:
 
     void setPosition(std::pair<int,int> pos) override;
     void setSize(std::pair<int,int> size) override;
+    void setTheme(Theme& theme) override;
     void setShowChoices(bool showChoices);
 
     bool getShowChoices();

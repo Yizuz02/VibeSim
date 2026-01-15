@@ -30,6 +30,19 @@ long getIndividualAt(std::vector<Individual>& population, float x, float y) {
     return -1;
 }
 
+std::vector<std::string> getThemeNames(
+    const std::unordered_map<std::string, Theme>& themes)
+{
+    std::vector<std::string> names;
+    names.reserve(themes.size());
+
+    for (const auto& [name, theme] : themes) {
+        names.push_back(name);
+    }
+
+    return names;
+}
+
 
 int main() {
     std::random_device rd;
@@ -44,25 +57,24 @@ int main() {
     bool pause = false;
     bool start = false;
 
-    sf::Font font;
-    font.loadFromFile("resources/fonts/W95FA.otf");
-
     std::uniform_int_distribution<int> dist(-1, 1);
     sf::RenderWindow window(sf::VideoMode(widthWindow, heightWindow), "VibeSim", sf::Style::None);
     positionWindow = window.getPosition();
 
-    Theme themeW95(sf::Color(190, 190, 190), sf::Color(8, 39, 245), sf::Color(255, 255, 0), sf::Color::White, sf::Color::Black, font);
+    std::unordered_map<std::string, Theme> themes = Theme::loadAllFromFolder("resources/themes");
 
-    TitleBar titleBar(themeW95, {1600, 34});
+    Theme theme = themes.at("Classic");
+
+    TitleBar titleBar(theme, {1600, 34});
 
     //Creacion del Panel Menu
-    Button buttonSpace("Space", themeW95, {90,50});
-    Button buttonObstacles("Obstacles", themeW95, {90,50});
-    Button buttonPopulation("Population", themeW95, {90,50});
-    Button buttonGoals("Goals", themeW95, {90,50});
-    Button buttonSimulation("Simulation", themeW95, {90,50});
-    Button buttonAppearance("Appearance", themeW95, {90,50});
-    WidgetPanel menuPanel(sf::Color(190, 190, 190), {1600,34}, {0,34}, 1, 2);
+    Button buttonSpace("Space", theme, {90,50});
+    Button buttonObstacles("Obstacles", theme, {90,50});
+    Button buttonPopulation("Population", theme, {90,50});
+    Button buttonGoals("Goals", theme, {90,50});
+    Button buttonSimulation("Simulation", theme, {90,50});
+    Button buttonAppearance("Appearance", theme, {90,50});
+    WidgetPanel menuPanel(theme, {1600,34}, {0,34}, 1, 2);
     menuPanel.addElement(buttonSpace);
     menuPanel.addElement(buttonObstacles);
     menuPanel.addElement(buttonPopulation);
@@ -71,24 +83,24 @@ int main() {
     menuPanel.addElement(buttonAppearance);
 
     //Creacion del Panel Space
-    NumericInput inputSpaceHeight(200, 10000, 600, themeW95, {100,40});
-    NumericInput inputSpaceWidth(200, 10000, 900, themeW95, {100,40});
-    Button buttonCreateSpace("Create Space", themeW95, {120,40});
+    NumericInput inputSpaceHeight(200, 10000, 600, theme, {100,40});
+    NumericInput inputSpaceWidth(200, 10000, 900, theme, {100,40});
+    Button buttonCreateSpace("Create Space", theme, {120,40});
 
-    WidgetPanel spacePanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    WidgetPanel spacePanel(theme, {1600,44},{0,68}, 5, 5);
     spacePanel.addElement(inputSpaceWidth);
     spacePanel.addElement(inputSpaceHeight);
     spacePanel.addElement(buttonCreateSpace);
 
     //Creacion del Panel Obstacles
-    NumericInput inputNumSidesObstacle(3, 100, themeW95, {100,40});
-    DropList inputObstaclePosition({"Center", "Random", "Custom"}, themeW95, {170,40});
-    Button buttonRegularObstacle("Add Regular Polygon", themeW95, {120,40});
-    Button buttonConvexObstacle("Add Convex Shape", themeW95, {120,40});
-    Button buttonDeleteObstacle("Delete Obstacle", themeW95, {120,40});
-    Button buttonClearObstacles("Clear Obstacles", themeW95, {120,40});
+    NumericInput inputNumSidesObstacle(3, 100, theme, {100,40});
+    DropList inputObstaclePosition({"Center", "Random", "Custom"}, theme, {170,40});
+    Button buttonRegularObstacle("Add Regular Polygon", theme, {120,40});
+    Button buttonConvexObstacle("Add Convex Shape", theme, {120,40});
+    Button buttonDeleteObstacle("Delete Obstacle", theme, {120,40});
+    Button buttonClearObstacles("Clear Obstacles", theme, {120,40});
 
-    WidgetPanel obstaclesPanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    WidgetPanel obstaclesPanel(theme, {1600,44},{0,68}, 5, 5);
     obstaclesPanel.addElement(inputNumSidesObstacle);
     obstaclesPanel.addElement(inputObstaclePosition);
     obstaclesPanel.addElement(buttonRegularObstacle);
@@ -100,13 +112,13 @@ int main() {
     buttonClearObstacles.setEnabled(false);
 
     //Creacion del Panel Population
-    NumericInput inputPopulationSize(1, 5000, themeW95, {100,40});
-    Button buttonCreatePopulation("Create Population", themeW95, {120,40});
-    Button buttonAddIndividual("Add Individual", themeW95, {120,40});
-    Button buttonDeleteIndividual("Delete Individual", themeW95, {120,40});
-    Button buttonDeletePopulation("Delete Population", themeW95, {120,40});
+    NumericInput inputPopulationSize(1, 5000, theme, {100,40});
+    Button buttonCreatePopulation("Create Population", theme, {120,40});
+    Button buttonAddIndividual("Add Individual", theme, {120,40});
+    Button buttonDeleteIndividual("Delete Individual", theme, {120,40});
+    Button buttonDeletePopulation("Delete Population", theme, {120,40});
     
-    WidgetPanel populationPanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    WidgetPanel populationPanel(theme, {1600,44},{0,68}, 5, 5);
     populationPanel.addElement(inputPopulationSize);
     populationPanel.addElement(buttonCreatePopulation);
     populationPanel.addElement(buttonAddIndividual);
@@ -117,11 +129,11 @@ int main() {
     buttonDeletePopulation.setEnabled(false);
 
     //Creacion del Panel Simulation
-    Button buttonStart("Start", themeW95, {100,40});
-    Button buttonPause("Pause", themeW95, {100,40});
-    Button buttonStop("Stop", themeW95, {100,40});
+    Button buttonStart("Start", theme, {100,40});
+    Button buttonPause("Pause", theme, {100,40});
+    Button buttonStop("Stop", theme, {100,40});
 
-    WidgetPanel simulationPanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    WidgetPanel simulationPanel(theme, {1600,44},{0,68}, 5, 5);
     simulationPanel.addElement(buttonStart);
     simulationPanel.addElement(buttonPause);
     simulationPanel.addElement(buttonStop);
@@ -129,17 +141,15 @@ int main() {
     buttonStop.setEnabled(false);
 
     //Creacion del Panel Appearance
-    DropList inputThemes({"Windows 95", "Coral", "Rose"}, themeW95, {170,40});
-    Button buttonApplyTheme("Apply Theme", themeW95, {120,40});
-    Button buttonZoomIn("Zoom In", themeW95, {80,40});
-    Button buttonZoomOut("Zoom Out", themeW95, {80,40});
-    Button buttonResetZoom("Reset Zoom", themeW95, {80,40});
-    Button buttonToggleMoveView("Toggle Move View", themeW95, {120,40});
-    Button buttonCenterView("Center View", themeW95, {120,40});
+    DropList inputThemes(getThemeNames(themes), theme, {170,40});
+    Button buttonZoomIn("Zoom In", theme, {80,40});
+    Button buttonZoomOut("Zoom Out", theme, {80,40});
+    Button buttonResetZoom("Reset Zoom", theme, {80,40});
+    Button buttonToggleMoveView("Toggle Move View", theme, {120,40});
+    Button buttonCenterView("Center View", theme, {120,40});
 
-    WidgetPanel appearancePanel(sf::Color(190, 190, 190), {1600,44},{0,68}, 5, 5);
+    WidgetPanel appearancePanel(theme, {1600,44},{0,68}, 5, 5);
     appearancePanel.addElement(inputThemes);
-    appearancePanel.addElement(buttonApplyTheme);
     appearancePanel.addElement(buttonZoomIn);
     appearancePanel.addElement(buttonZoomOut);
     appearancePanel.addElement(buttonResetZoom);
@@ -151,9 +161,9 @@ int main() {
     Collisions collisions;
     Space space(112, {900,600}, sf::Color(1, 130, 129), collisions, window);
 
-    Obstacles obstacles(space, themeW95);
+    Obstacles obstacles(space, theme);
 
-    Population population(space, themeW95, 6.f);
+    Population population(space, theme, 6.f);
     population.setRadius(5.f);
     int populationSize = 0;
     long selectedIndividual = -1;
@@ -222,7 +232,7 @@ int main() {
                 long clickedInd = population.getIndividualAt(worldPos.x, worldPos.y);
                 if (clickedInd!=-1) {
                     if(selectedIndividual!=-1)
-                        population.getIndividual(selectedIndividual)->getShape().setFillColor(themeW95.getMainColor());
+                        population.getIndividual(selectedIndividual)->getShape().setFillColor(theme.getMainColor());
                     if(selectedIndividual==clickedInd){
                         selectedIndividual = -1;
                     } else {
@@ -233,7 +243,7 @@ int main() {
                 long clickedObs = obstacles.getObstacleAt(worldPos.x, worldPos.y);
                 if (clickedObs!=-1) {
                     if(selectedObstacle!=-1)
-                        obstacles.getObstacle(selectedObstacle)->shape->setFillColor(themeW95.getSecondaryColor());
+                        obstacles.getObstacle(selectedObstacle)->shape->setFillColor(theme.getSecondaryColor());
                     if(selectedObstacle==clickedObs){
                         selectedObstacle = -1;
                     } else {
@@ -421,9 +431,15 @@ int main() {
                 inputThemes.setShowChoices(!inputThemes.getShowChoices());
             }
             if(inputThemes.isChoiceClicked(event,window)){
-
+                Theme& newTheme = themes.at(inputThemes.getSelected());
+                titleBar.setTheme(newTheme);
+                menuPanel.setTheme(newTheme);
+                spacePanel.setTheme(newTheme);
+                populationPanel.setTheme(newTheme);
+                obstaclesPanel.setTheme(newTheme);
+                simulationPanel.setTheme(newTheme);
+                appearancePanel.setTheme(newTheme);
             }
-
             if (buttonZoomIn.isClicked(event, window)){
                 simView.zoom(0.9f);
             }

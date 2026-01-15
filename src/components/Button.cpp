@@ -91,6 +91,15 @@ void Button::setEnabled(bool value){
     }
 }
 
+void Button::setTheme(Theme &theme){
+    this->theme = theme;
+    setupButtonBody(size, pos);
+    setupButtonPadding(size, pos);
+    setupButtonMargins(size, pos);
+    buttonText.setFont(theme.getFont());
+    buttonText.setFillColor(theme.getFontColor());
+}
+
 void Button::setSize(std::pair<int,int> size) {
     this->size = size;
     setupButtonBody(size, pos);

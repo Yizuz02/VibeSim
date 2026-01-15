@@ -14,6 +14,10 @@ file(GLOB_RECURSE SOURCES
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
+target_include_directories(VibeSim PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
 target_link_libraries(VibeSim PRIVATE sfml-graphics sfml-window sfml-system)
 
 if (WIN32)

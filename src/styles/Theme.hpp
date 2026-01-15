@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <unordered_map>
 
 class Theme {
 private:
@@ -53,6 +54,10 @@ public:
           const sf::Color& inputColor,
           const sf::Color& fontColor,
           const sf::Font& font);
+
+    static Theme loadFromJson(const std::string& path);
+    static std::unordered_map<std::string, Theme>
+        loadAllFromFolder(const std::string& folderPath);
 
     // 🔹 Getters
     const sf::Color& getComponentColor() const;

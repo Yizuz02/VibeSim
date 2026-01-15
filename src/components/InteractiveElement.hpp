@@ -40,7 +40,7 @@ public:
     virtual void setPosition(std::pair<int,int> pos);
     virtual void setSize(std::pair<int,int> size);
     void setLabelText(const std::string& text);
-
+    virtual void setTheme(Theme& theme);
     void setVisible(bool value);
     virtual void setEnabled(bool value);
 

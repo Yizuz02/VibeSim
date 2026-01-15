@@ -1,0 +1,9 @@
+{
+  "name": "Coral",
+  "componentColor": [255, 163, 140],
+  "mainColor": [255, 127, 80],
+  "secondaryColor": [255, 255, 0],
+  "inputColor": [255, 255, 255],
+  "fontColor": [0, 0, 0],
+  "fontPath": "resources/fonts/W95FA.otf"
+}

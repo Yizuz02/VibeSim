@@ -142,6 +142,16 @@ void DropList::setSize(std::pair<int,int> size) {
     setupSelectedText(pos);
 }
 
+void DropList::setTheme(Theme &theme){
+    this->theme = theme;
+    setupChoiceBody(size, pos);
+    setupChoicePadding(size, pos);
+    setupChoiceMargins(size, pos);
+    setupSelectedText(pos);
+    setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
+    button.setTheme(theme);
+}
+
 void DropList::updateHover(const sf::RenderWindow& window) {
     if (!showChoices) return;
 
