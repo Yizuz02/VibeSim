@@ -2,33 +2,33 @@
 
 Space::Space(std::pair<int,int> pos,
              std::pair<int,int> size,
-             sf::Color backgroundColor,
+             Theme& theme,
              Collisions& collisions,
              sf::RenderWindow& window)
     : pos(pos),
       size(size),
       topBoundary(pos.second),
-      backgroundColor(backgroundColor),
+      theme(&theme),
       window(window),
       collisions(&collisions)
 {
     background.setSize(sf::Vector2f(size.first, size.second));
-    background.setFillColor(backgroundColor);
+    background.setFillColor(theme.getBackgroundColor());
     background.setPosition(pos.first, pos.second);
 }
 
 Space::Space(int topBoundary,
              std::pair<int,int> size,
-             sf::Color backgroundColor,
+             Theme& theme,
              Collisions& collisions,
              sf::RenderWindow& window)
     : size(size),
       topBoundary(topBoundary),
-      backgroundColor(backgroundColor),
+      theme(&theme),
       window(window),
       collisions(&collisions)
 {
-    background.setFillColor(backgroundColor);
+    background.setFillColor(theme.getSpaceColor());
     setSize(size);
 }
 
@@ -55,9 +55,9 @@ void Space::setSize(std::pair<int,int> size) {
     setPosition({x, y});
 }
 
-void Space::setBackgroundColor(const sf::Color& color) {
-    backgroundColor = color;
-    background.setFillColor(color);
+void Space::setTheme(Theme &theme){
+    this->theme = &theme;
+    background.setFillColor(theme.getSpaceColor());
 }
 
 void Space::setTopBoundary(int topBoundary) {
@@ -74,10 +74,6 @@ std::pair<int,int> Space::getSize() const {
 
 int Space::getTopBoundary() const {
     return topBoundary;
-}
-
-sf::Color Space::getBackgroundColor() const {
-    return backgroundColor;
 }
 
 sf::RenderWindow& Space::getWindow() const{
@@ -108,6 +104,15 @@ float Space::maxX() const {
 float Space::maxY() const {
     return pos.second + size.second;
 }
+
+bool Space::contains(float x, float y, float radius) const {
+    return
+        x - radius >= minX() &&
+        y - radius >= minY() &&
+        x + radius <= maxX() &&
+        y + radius <= maxY();
+}
+
 
 void Space::draw() {
     window.draw(background);

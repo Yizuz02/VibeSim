@@ -92,11 +92,12 @@ void DropList::setupSelectedText(std::pair<int,int> pos) {
 DropList::DropList(std::vector<std::string> choices,
                Theme& theme,
                std::pair<int,int> size,
-               std::pair<int,int> pos)
-    : InteractiveElement(theme, size, pos, ""),
+               std::pair<int,int> pos, 
+               std::string labelString)
+    : InteractiveElement(theme, size, pos, labelString),
     choices(choices),
     selected(choices[0]),
-    button("", theme, {size.second-8, size.second-8}, {pos.first+size.first-size.second+4, pos.second+4}) {
+    button("", theme, std::pair<int,int>{size.second-8, size.second-8}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}) {
         setupChoiceBody(size, pos);
         setupChoicePadding(size, pos);
         setupChoiceMargins(size, pos);
@@ -107,11 +108,12 @@ DropList::DropList(std::vector<std::string> choices,
 
 DropList::DropList(std::vector<std::string> choices,
                Theme& theme,
-               std::pair<int,int> size)
-    : InteractiveElement(theme, size, ""),
+               std::pair<int,int> size, 
+               std::string labelString)
+    : InteractiveElement(theme, size, labelString),
     choices(choices),
     selected(choices[0]),
-    button("", theme, {size.second-8, size.second-8}, {pos.first+size.first-size.second+4, pos.second+4}) {
+    button("", theme, std::pair<int,int>{size.second-8, size.second-8}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}) {
         setupChoiceBody(size, pos);
         setupChoicePadding(size, pos);
         setupChoiceMargins(size, pos);
@@ -129,6 +131,7 @@ void DropList::setPosition(std::pair<int,int> pos) {
     setupTriangleIcon({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
     setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
     setupSelectedText(pos);
+    setupLabelText(pos);
 }
 
 void DropList::setSize(std::pair<int,int> size) {
@@ -150,6 +153,7 @@ void DropList::setTheme(Theme &theme){
     setupSelectedText(pos);
     setupChoiceOptionsBodies(size,{pos.first, pos.second+size.second});
     button.setTheme(theme);
+    setupLabelText(pos);
 }
 
 void DropList::updateHover(const sf::RenderWindow& window) {
@@ -183,6 +187,7 @@ void DropList::draw(sf::RenderWindow& window) {
         window.draw(selectedText);
         button.draw(window);
         window.draw(triangleIcon);
+        window.draw(labelText);
         if(showChoices){
             if(!isChoicePressed) {updateHover(window);}
             window.draw(choiceListBody);

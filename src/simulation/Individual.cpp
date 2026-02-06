@@ -83,3 +83,8 @@ long Individual::getId() const {
 sf::CircleShape& Individual::getShape() {
     return individualBody;
 }
+
+void Individual::setTheme(Theme *theme){
+    this->theme = theme;
+    individualBody.setFillColor(theme->getMainColor());
+}

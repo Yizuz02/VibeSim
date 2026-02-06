@@ -36,8 +36,8 @@ protected:
     void setupSelectedText(std::pair<int,int> pos);
 
 public:
-    DropList(std::vector<std::string> choices, Theme& theme, std::pair<int,int> size);
-    DropList(std::vector<std::string> choices, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos);
+    DropList(std::vector<std::string> choices, Theme& theme, std::pair<int,int> size, std::string labelString);
+    DropList(std::vector<std::string> choices, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos, std::string labelString);
 
     void setPosition(std::pair<int,int> pos) override;
     void setSize(std::pair<int,int> size) override;

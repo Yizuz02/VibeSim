@@ -72,6 +72,29 @@ Button::Button(std::string buttonText,
         setupButtonText(buttonText, pos);
 }
 
+Button::Button(std::string buttonText,
+               Theme& theme,
+               std::pair<int,int> size,
+               std::pair<int,int> pos,
+               std::string labelString)
+    : InteractiveElement(theme, size, pos, labelString) {
+        setupButtonBody(size, pos);
+        setupButtonPadding(size, pos);
+        setupButtonMargins(size, pos);
+        setupButtonText(buttonText, pos);
+}
+
+Button::Button(std::string buttonText,
+               Theme& theme,
+               std::pair<int,int> size,
+               std::string labelString)
+    : InteractiveElement(theme, size, labelString) {
+        setupButtonBody(size, pos);
+        setupButtonPadding(size, pos);
+        setupButtonMargins(size, pos);
+        setupButtonText(buttonText, pos);
+}
+
 void Button::setPosition(std::pair<int,int> pos) {
     this->pos = pos;
     setupButtonBody(size, pos);
@@ -97,7 +120,10 @@ void Button::setTheme(Theme &theme){
     setupButtonPadding(size, pos);
     setupButtonMargins(size, pos);
     buttonText.setFont(theme.getFont());
-    buttonText.setFillColor(theme.getFontColor());
+    if(enabled)
+        buttonText.setFillColor(theme.getFontColor());
+    else
+        buttonText.setFillColor(theme.getDisabledFontColor());
 }
 
 void Button::setSize(std::pair<int,int> size) {

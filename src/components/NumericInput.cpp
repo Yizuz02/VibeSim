@@ -71,14 +71,15 @@ NumericInput::NumericInput(int minValue,
                int maxValue,
                Theme& theme,
                std::pair<int,int> size,
-               std::pair<int,int> pos)
-    : InteractiveElement(theme, size, pos, ""),
+               std::pair<int,int> pos, 
+               std::string labelString)
+    : InteractiveElement(theme, size, pos, labelString),
     minValue(minValue),
     maxValue(maxValue),
     value(minValue),
     buffer(std::to_string(value)),
-    upButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4}),
-    downButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
+    upButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}),
+    downButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
         setupInputBody();
         setupInputPadding();
         setupInputMargins();
@@ -91,14 +92,15 @@ NumericInput::NumericInput(int minValue,
                int value,
                Theme& theme,
                std::pair<int,int> size,
-               std::pair<int,int> pos)
-    : InteractiveElement(theme, size, pos, ""),
+               std::pair<int,int> pos, 
+               std::string labelString)
+    : InteractiveElement(theme, size, pos, labelString),
     minValue(minValue),
     maxValue(maxValue),
     value(value),
     buffer(std::to_string(value)),
-    upButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4}),
-    downButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
+    upButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}),
+    downButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
         setupInputBody();
         setupInputPadding();
         setupInputMargins();
@@ -109,14 +111,15 @@ NumericInput::NumericInput(int minValue,
 NumericInput::NumericInput(int minValue, 
                int maxValue,
                Theme& theme,
-               std::pair<int,int> size)
-    : InteractiveElement(theme, size, ""),
+               std::pair<int,int> size, 
+               std::string labelString)
+    : InteractiveElement(theme, size, labelString),
     minValue(minValue),
     maxValue(maxValue),
     value(minValue),
     buffer(std::to_string(value)),
-    upButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4}),
-    downButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
+    upButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}),
+    downButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
         setupInputBody();
         setupInputPadding();
         setupInputMargins();
@@ -129,14 +132,15 @@ NumericInput::NumericInput(int minValue,
                int maxValue,
                int value,
                Theme& theme,
-               std::pair<int,int> size)
-    : InteractiveElement(theme, size, ""),
+               std::pair<int,int> size, 
+               std::string labelString)
+    : InteractiveElement(theme, size, labelString),
     minValue(minValue),
     maxValue(maxValue),
     value(value),
     buffer(std::to_string(value)),
-    upButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4}),
-    downButton("", theme, {size.second-8, (size.second-8)/2}, {pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
+    upButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4}),
+    downButton("", theme, std::pair<int,int>{size.second-8, (size.second-8)/2}, std::pair<int,int>{pos.first+size.first-size.second+4, pos.second+4+(size.second-8)/2}) {
         setupInputBody();
         setupInputPadding();
         setupInputMargins();
@@ -153,6 +157,7 @@ void NumericInput::setPosition(std::pair<int,int> pos) {
     setupInputMargins();
     setupTrianglesIcons({size.second-8, size.second-8},{pos.first+size.first-size.second+4, pos.second+4});
     setupValueText();
+    setupLabelText(pos);
 }
 
 void NumericInput::setSize(std::pair<int,int> size) {
@@ -172,6 +177,7 @@ void NumericInput::setTheme(Theme &theme){
     setupInputPadding();
     setupInputMargins();
     setupValueText();
+    setupLabelText(pos);
     upButton.setTheme(theme);
     downButton.setTheme(theme);
 }
@@ -197,6 +203,7 @@ void NumericInput::draw(sf::RenderWindow& window) {
         downButton.draw(window);
         window.draw(triangleIconDown);
         window.draw(triangleIconUp);
+        window.draw(labelText);
     }
 }
 
@@ -232,17 +239,19 @@ bool NumericInput::isDownButtonClicked(sf::Event& event, sf::RenderWindow& windo
 }
 
 bool NumericInput::handleFocus(sf::Event& event, sf::RenderWindow& window) {
-    if (event.type == sf::Event::MouseButtonPressed &&
-        event.mouseButton.button == sf::Mouse::Left) {
+    if (enabled && visible){
+        if (event.type == sf::Event::MouseButtonPressed &&
+            event.mouseButton.button == sf::Mouse::Left) {
 
-        sf::Vector2f mouse =
-            window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
+            sf::Vector2f mouse =
+                window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
 
-        if (inputBody.getGlobalBounds().contains(mouse)) {
-            focused = true;
-            return true;
-        } else {
-            focused = false;
+            if (inputBody.getGlobalBounds().contains(mouse)) {
+                focused = true;
+                return true;
+            } else {
+                focused = false;
+            }
         }
     }
     return false;

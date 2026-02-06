@@ -9,7 +9,8 @@ InteractiveElement::InteractiveElement(Theme& theme,
       size(size),
       theme(theme) {
 
-    setupLabelText(labelText, pos);
+    setupLabelText(pos);
+    setLabelText(labelText);
 }
 
 // Constructor sin posición (por defecto 0,0)
@@ -20,21 +21,21 @@ InteractiveElement::InteractiveElement(Theme& theme,
       size(size),
       theme(theme) {
 
-    setupLabelText(labelText, pos);
+    setupLabelText(pos);
+    setLabelText(labelText);
 }
 
 // Setup del texto
-void InteractiveElement::setupLabelText(std::string& text, std::pair<int,int> pos) {
-    labelText.setFont(theme.getFont());
-    labelText.setString(text);
-    labelText.setFillColor(theme.getFontColor());
+void InteractiveElement::setupLabelText(std::pair<int,int> pos) {
+    int fontSize = size.second/2.8;
 
-    // Tamaño de texto proporcional (simple y efectivo)
-    labelText.setCharacterSize(static_cast<unsigned int>(size.second * 0.5f));
+    labelText.setFont(theme.getFont());
+    labelText.setFillColor(theme.getFontColor());
+    labelText.setCharacterSize(fontSize);
 
     labelText.setPosition(
-        static_cast<float>(pos.first),
-        static_cast<float>(pos.second)
+        static_cast<float>(pos.first + 2),
+        static_cast<float>(pos.second - 12)
     );
 }
 

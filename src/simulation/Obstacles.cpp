@@ -39,7 +39,7 @@ long Obstacles::addRegularPolygon(
     auto poly = std::make_unique<sf::CircleShape>(radius, sides);
 
     poly->setPosition(position.first, position.second);
-    poly->setFillColor(theme->getSecondaryColor());
+    poly->setFillColor(theme->getSecondaryDarkColor());
 
     // Registrar colisiones
     space->getCollisions().addShape(*poly, true);
@@ -111,7 +111,7 @@ long Obstacles::addRegularPolygon(
         return -1;
     }
 
-    poly->setFillColor(theme->getSecondaryColor());
+    poly->setFillColor(theme->getSecondaryDarkColor());
 
     // 🔥 ahora sí, registrar colisiones
     collisions.addShape(*poly, true);
@@ -145,6 +145,13 @@ const Obstacles::Obstacle* Obstacles::getObstacle(long id) const {
         if (obs.id == id)
             return &obs;
     return nullptr;
+}
+
+void Obstacles::setTheme(Theme &theme){
+    this->theme = &theme;
+    for (const auto& obs : obstacles){
+        obs.shape->setFillColor(theme.getSecondaryDarkColor());
+    }
 }
 
 // ---------------- ELIMINAR UNO ----------------

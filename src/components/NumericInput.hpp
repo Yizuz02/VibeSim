@@ -36,10 +36,10 @@ protected:
     void setupValueText();
 
 public:
-    NumericInput(int minValue, int maxValue, Theme& theme, std::pair<int,int> size);
-    NumericInput(int minValue, int maxValue, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos);
-    NumericInput(int minValue, int maxValue, int value, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos);
-    NumericInput(int minValue, int maxValue, int value, Theme &theme, std::pair<int, int> size);
+    NumericInput(int minValue, int maxValue, Theme& theme, std::pair<int,int> size, std::string labelString);
+    NumericInput(int minValue, int maxValue, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos, std::string labelString);
+    NumericInput(int minValue, int maxValue, int value, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos, std::string labelString);
+    NumericInput(int minValue, int maxValue, int value, Theme &theme, std::pair<int, int> size, std::string labelString);
 
     void setPosition(std::pair<int, int> pos) override;
     void setSize(std::pair<int,int> size) override;

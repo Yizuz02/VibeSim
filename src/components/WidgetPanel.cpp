@@ -114,20 +114,18 @@ void WidgetPanel::setVisible(bool value)
 void WidgetPanel::addElement(InteractiveElement& element) {
     std::pair<int,int> elementPos = {
         pos.first + leftPadding,
-        pos.second + topPadding
+        pos.second + topPadding + ((element.getLabelText() == "") ? 0 : element.getSize().second/6)
     };
 
     for (InteractiveElement* e : interactiveElementList) {
         elementPos.first += e->getSize().first + gap;
     }
 
-    if (element.getSize().second + topPadding + bottomPadding > size.second) {
-        auto elementSize = element.getSize();
-        element.setSize({
-            elementSize.first,
-            size.second - topPadding - bottomPadding
-        });
-    }
+    auto elementSize = element.getSize();
+    element.setSize({
+        elementSize.first,
+        size.second - topPadding - bottomPadding - ((element.getLabelText() == "") ? 0 : element.getSize().second/6)
+    });
 
     element.setPosition(elementPos);
     interactiveElementList.push_back(&element);

@@ -22,6 +22,7 @@ public:
 
     // Crear individuo 
     Individual& createIndividual(std::pair<int,int> pos);
+    Individual& createIndividual(std::pair<int,int> center, int radius);
     Individual& createIndividual();
 
     // Agregar individuo externo
@@ -45,6 +46,7 @@ public:
     // Getters / setters
     float getRadius() const;
     void setRadius(float newRadius);
+    void setTheme(Theme &theme);
 
     size_t size() const;
     bool empty() const;

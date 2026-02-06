@@ -26,12 +26,19 @@ Theme::Theme()
 Theme::Theme(const sf::Color& component,
              const sf::Color& main,
              const sf::Color& secondary,
+             const sf::Color& spaceColor,
+             const sf::Color& backgroundColor,
+             const sf::Color& goalColor,
+             const sf::Color& startColor,
              const sf::Color& input,
              const sf::Color& fontC,
              const sf::Font& f)
     : componentColor(component),
       mainColor(main),
       secondaryColor(secondary),
+      spaceColor(spaceColor),
+      backgroundColor(backgroundColor),
+      goalColor(goalColor),
       inputColor(input),
       fontColor(fontC),
       font(f) {
@@ -57,6 +64,10 @@ Theme Theme::loadFromJson(const std::string& path)
     sf::Color componentColor  = ColorUtils::colorFromJson(j.at("componentColor"));
     sf::Color mainColor       = ColorUtils::colorFromJson(j.at("mainColor"));
     sf::Color secondaryColor  = ColorUtils::colorFromJson(j.at("secondaryColor"));
+    sf::Color backgroundColor = ColorUtils::colorFromJson(j.at("backgroundColor"));
+    sf::Color spaceColor      = ColorUtils::colorFromJson(j.at("spaceColor"));
+    sf::Color goalColor       = ColorUtils::colorFromJson(j.at("goalColor"));
+    sf::Color startColor       = ColorUtils::colorFromJson(j.at("startColor"));
     sf::Color inputColor      = ColorUtils::colorFromJson(j.at("inputColor"));
     sf::Color fontColor       = ColorUtils::colorFromJson(j.at("fontColor"));
 
@@ -73,6 +84,10 @@ Theme Theme::loadFromJson(const std::string& path)
         componentColor,
         mainColor,
         secondaryColor,
+        spaceColor,
+        backgroundColor,
+        goalColor,
+        startColor,
         inputColor,
         fontColor,
         font
@@ -159,6 +174,13 @@ const sf::Color& Theme::getInputLightColor() const { return inputLightColor; }
 const sf::Color& Theme::getInputDarkerColor() const { return inputDarkerColor; }
 const sf::Color& Theme::getInputLighterColor() const { return inputLighterColor; }
 
+const sf::Color &Theme::getBackgroundColor() const { return backgroundColor;}
+
+const sf::Color &Theme::getSpaceColor() const { return spaceColor;}
+
+const sf::Color &Theme::getGoalColor() const { return goalColor; }
+const sf::Color &Theme::getStartColor() const { return startColor; }
+
 const sf::Color& Theme::getFontColor() const { return fontColor; }
 const sf::Color &Theme::getDisabledFontColor() const{ return disabledFontColor;}
 const sf::Font &Theme::getFont() const { return font; }
@@ -183,6 +205,14 @@ void Theme::setSecondaryColor(const sf::Color& color) {
 void Theme::setInputColor(const sf::Color& color) {
     inputColor = color;
     generateInputVariations();
+}
+
+void Theme::setBackgroundColor(const sf::Color &color){
+    backgroundColor = color;
+}
+
+void Theme::setSpaceColor(const sf::Color &color){
+    spaceColor = color;
 }
 
 void Theme::setFontColor(const sf::Color& color) {

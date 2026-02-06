@@ -5,13 +5,14 @@
 #include <cstdint>
 #include <utility>
 #include "Collisions.hpp"
+#include "../styles/Theme.hpp"
+
 
 class Space {
 private:
     std::pair<int,int> pos;
     std::pair<int,int> size;
     int topBoundary;
-    sf::Color backgroundColor;
     sf::RenderWindow& window;
 
     // Referencia a los obstáculos del mundo
@@ -19,24 +20,24 @@ private:
 
     // Fondo visual
     sf::RectangleShape background;
+    Theme* theme;
     
-
 public:
     Space(std::pair<int,int> pos,
           std::pair<int,int> size,
-          sf::Color backgroundColor,
+          Theme& theme,
           Collisions& collisions,
           sf::RenderWindow& window);
 
     Space(int minY,
           std::pair<int,int> size,
-          sf::Color backgroundColor,
+          Theme& theme,
           Collisions& collisions,
           sf::RenderWindow& window);
 
     void setPosition(std::pair<int,int> pos);
     void setSize(std::pair<int,int> size);
-    void setBackgroundColor(const sf::Color& color);
+    void setTheme(Theme& theme);
     void setTopBoundary(int minY);
 
     std::pair<int,int> getPosition() const;
@@ -51,6 +52,8 @@ public:
     float minY() const;
     float maxX() const;
     float maxY() const;
+
+    bool contains(float x, float y, float radius = 0.f) const;
 
     // Render
     void draw();

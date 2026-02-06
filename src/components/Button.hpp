@@ -31,6 +31,8 @@ protected:
 public:
     Button(std::string buttonText, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos);
     Button(std::string buttonText, Theme& theme, std::pair<int,int> size);
+    Button(std::string buttonText, Theme& theme, std::pair<int,int> size, std::pair<int,int> pos, std::string labelString);
+    Button(std::string buttonText, Theme& theme, std::pair<int,int> size, std::string labelString);
     Button();
 
     void setSize(std::pair<int,int> pos) override;

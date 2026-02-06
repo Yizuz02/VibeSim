@@ -39,6 +39,8 @@ public:
     const Obstacle* getObstacle(long id) const;
     sf::Shape& getShape();
 
+    void setTheme(Theme& theme);
+
     // ---------------- ELIMINAR ----------------
     bool removeObstacle(long id);
     void clear();

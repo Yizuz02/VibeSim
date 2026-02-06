@@ -27,18 +27,18 @@ Individual& Population::createIndividual(std::pair<int,int> pos) {
     return ref;
 }
 
-Individual& Population::createIndividual() {
+Individual& Population::createIndividual(std::pair<int,int> center, int radius) {
     long id = nextId++;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int> disty(
-        space->minY() + radius,
-        space->maxY() - radius * 2
+        space->minY() + this->radius,
+        space->maxY() - this->radius * 2
     );
     std::uniform_int_distribution<int> distx(
-        space->minX() + radius,
-        space->maxX() - radius * 2
+        space->minX() + this->radius,
+        space->maxX() - this->radius * 2
     );
 
     Collisions& collisions = space->getCollisions();
@@ -48,14 +48,16 @@ Individual& Population::createIndividual() {
     sf::FloatRect box;
     bool valid = false;
 
+    int squaredRadius = radius * radius;
+
     for (int i = 0; i < MAX_ATTEMPTS; ++i) {
         pos = { distx(gen), disty(gen) };
 
         box = sf::FloatRect(
             static_cast<float>(pos.first),
             static_cast<float>(pos.second),
-            radius * 2.f,
-            radius * 2.f
+            this->radius * 2.f,
+            this->radius * 2.f
         );
 
         int left   = std::floor(box.left);
@@ -63,7 +65,20 @@ Individual& Population::createIndividual() {
         int top    = std::floor(box.top);
         int bottom = std::floor(box.top  + box.height - 1);
 
+        
+
         // --- LÍMITES ---
+        auto insideCircle = [&](float x, float y) {
+            float dx = x - center.first;
+            float dy = y - center.second;
+            return (dx * dx + dy * dy) <= radius * radius;
+        };
+
+        if (!insideCircle(left,  top))    continue;
+        if (!insideCircle(right, top))    continue;
+        if (!insideCircle(left,  bottom)) continue;
+        if (!insideCircle(right, bottom)) continue;
+
         if (left < space->minX() || top < space->minY()) continue;
         if (right > space->maxX() || bottom > space->maxY()) continue;
 
@@ -85,7 +100,7 @@ Individual& Population::createIndividual() {
 
     auto individual = std::make_unique<Individual>(
         id,
-        radius,
+        this->radius,
         pos,
         *space,
         *theme
@@ -97,6 +112,12 @@ Individual& Population::createIndividual() {
     Individual& ref = *individual;
     individuals.emplace(id, std::move(individual));
     return ref;
+}
+
+Individual& Population::createIndividual() {
+    std::pair<int, int> center = {space->minX() + space->getSize().first/2, space->minY() + space->getSize().second/2};
+    int radius = (space->getSize().first > space->getSize().second) ? space->getSize().second/2 : space->getSize().first/2;
+    return createIndividual(center, radius);
 }
 
 
@@ -149,6 +170,13 @@ float Population::getRadius() const {
 
 void Population::setRadius(float newRadius) {
     radius = newRadius;
+}
+
+void Population::setTheme(Theme &theme){
+    this->theme = &theme;
+    for (auto& [id, individual]: individuals){
+        individual->setTheme(&theme);
+    }
 }
 
 // ---------------- INFO ----------------

@@ -3,7 +3,11 @@
   "componentColor": [190, 190, 190],
   "mainColor": [8, 39, 245],
   "secondaryColor": [255, 255, 0],
+  "spaceColor": [1, 130, 129],
+  "backgroundColor": [255, 255, 255],
   "inputColor": [255, 255, 255],
+  "startColor": [0, 180, 0],
+  "goalColor": [255, 0, 129],
   "fontColor": [0, 0, 0],
   "fontPath": "resources/fonts/W95FA.otf"
 }

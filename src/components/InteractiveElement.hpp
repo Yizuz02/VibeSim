@@ -20,7 +20,7 @@ protected:
     sf::Text labelText;
 
     // Setup interno
-    void setupLabelText(std::string& text, std::pair<int,int> pos);
+    void setupLabelText(std::pair<int,int> pos);
 
 public:
     // Constructores

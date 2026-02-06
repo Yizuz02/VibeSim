@@ -33,4 +33,7 @@ public:
     // Getters
     long getId() const;
     sf::CircleShape& getShape();
+
+    // Setters
+    void setTheme(Theme* theme);
 };

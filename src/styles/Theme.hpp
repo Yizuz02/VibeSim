@@ -8,6 +8,10 @@ private:
     sf::Color componentColor;
     sf::Color mainColor;
     sf::Color secondaryColor;
+    sf::Color spaceColor;
+    sf::Color backgroundColor;
+    sf::Color goalColor;
+    sf::Color startColor; 
     sf::Color fontColor;
     sf::Color disabledFontColor;
     sf::Color inputColor;
@@ -51,6 +55,10 @@ public:
     Theme(const sf::Color& componentColor,
           const sf::Color& mainColor,
           const sf::Color& secondaryColor,
+          const sf::Color& spaceColor,
+          const sf::Color& backgroundColor,
+          const sf::Color& goalColor,
+          const sf::Color& startColor,
           const sf::Color& inputColor,
           const sf::Color& fontColor,
           const sf::Font& font);
@@ -84,6 +92,13 @@ public:
     const sf::Color& getInputDarkerColor() const;
     const sf::Color& getInputLighterColor() const;
 
+    const sf::Color& getBackgroundColor() const;
+
+    const sf::Color& getSpaceColor() const;
+
+    const sf::Color& getGoalColor() const;
+    const sf::Color& getStartColor() const;
+
     const sf::Color& getFontColor() const;
     const sf::Color& getDisabledFontColor() const;
     const sf::Font& getFont() const;
@@ -93,6 +108,9 @@ public:
     void setMainColor(const sf::Color& color);
     void setSecondaryColor(const sf::Color& color);
     void setInputColor(const sf::Color& color);
+    void setBackgroundColor(const sf::Color& color);
+    void setGoalColor(const sf::Color& color);
+    void setSpaceColor(const sf::Color& color);
     void setFontColor(const sf::Color& color);
     void setFont(const sf::Font& font);
 };
