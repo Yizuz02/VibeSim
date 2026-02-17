@@ -2,7 +2,6 @@
 #include <cmath>
 
 bool pointInShape(const sf::Shape& shape, float x, float y) {
-    // Transformar a espacio local del shape
     sf::Vector2f local =
         shape.getInverseTransform().transformPoint(x, y);
 
@@ -13,15 +12,21 @@ bool pointInShape(const sf::Shape& shape, float x, float y) {
         sf::Vector2f pi = shape.getPoint(i);
         sf::Vector2f pj = shape.getPoint(j);
 
-        bool intersect =
-            ((pi.y > local.y) != (pj.y > local.y)) &&
-            (local.x < (pj.x - pi.x) * (local.y - pi.y) / (pj.y - pi.y) + pi.x);
+        // Evitar división por casi cero
+        float denom = (pj.y - pi.y);
+        if (std::abs(denom) < 1e-6f)
+            continue;
 
-        if (intersect)
+        bool cond1 = (pi.y > local.y) != (pj.y > local.y);
+        float xIntersect = (pj.x - pi.x) * (local.y - pi.y) / denom + pi.x;
+
+        if (cond1 && local.x <= xIntersect)
             inside = !inside;
     }
+
     return inside;
 }
+
 
 // ---------------- ENCODE ----------------
 uint64_t Collisions::encode(int x, int y) {

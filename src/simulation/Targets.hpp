@@ -22,6 +22,7 @@ public:
     Target* getTarget(long id);
     const Target* getTarget(long id) const;
     const std::vector<Target>& getTargets() const;
+    bool empty() const;
 
     bool removeTarget(long id);
     void clear();

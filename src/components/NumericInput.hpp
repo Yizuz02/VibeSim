@@ -44,6 +44,8 @@ public:
     void setPosition(std::pair<int, int> pos) override;
     void setSize(std::pair<int,int> size) override;
     void setTheme(Theme& theme) override;
+    void setEnabled(bool value);
+    void setValue(int newValue);
 
     int getValue();
 
@@ -54,4 +56,6 @@ public:
 
     bool isUpButtonClicked(sf::Event& event, sf::RenderWindow& window);
     bool isDownButtonClicked(sf::Event& event, sf::RenderWindow& window);
+
+    void handleEvent(sf::Event& event, sf::RenderWindow& window);
 };

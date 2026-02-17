@@ -10,14 +10,129 @@
 #include "simulation/Simulation.hpp"
 #include <unordered_map>
 #include <windows.h>
+#include <math.h>
 
-long getIndividualAt(std::vector<Individual>& population, float x, float y) {
-    for (Individual& ind : population) {
-        if (ind.getShape().getGlobalBounds().contains(x, y)) {
-            return ind.getId();
+
+struct Point {
+    float x;
+    float y;
+    float angle = 0.0;
+    int parent; 
+};
+
+void drawThickLine(
+    sf::RenderWindow& window,
+    const sf::Vector2f& p1,
+    const sf::Vector2f& p2,
+    float thickness,
+    const sf::Color& color
+) {
+    sf::Vector2f direction = p2 - p1;
+    float length = std::sqrt(direction.x * direction.x +
+                             direction.y * direction.y);
+
+    sf::RectangleShape line({ length, thickness });
+    line.setPosition(p1);
+    line.setFillColor(color);
+
+    float angle = std::atan2(direction.y, direction.x) * 180.f / 3.14159265f;
+    line.setRotation(angle);
+
+    window.draw(line);
+}
+
+std::mt19937 rng(std::random_device{}());
+std::uniform_real_distribution<float> fullCircleDist(0.0f, 2.0f * M_PI);
+std::uniform_real_distribution<float> thirdCircleDist(-M_PI/4.0f, M_PI/4.0f);
+
+void grow(const Point& startPoint,
+          int N,
+          float stepSize,
+          int totalPaths,
+          std::vector<std::pair<Point, Point>>& segments,
+          Space& space,
+          Targets& goals)
+{
+    float angle;
+    int numChildren = 40;
+    bool addChild = true;
+    bool addSeg = false;
+    std::map<int, std::vector<int>> levels;
+    int level = 0;
+    levels[level] = {0};
+    int numPaths = 0;
+
+    std::vector<Point> nodes;
+    nodes.push_back(startPoint);
+    nodes[0].parent = -1; 
+    while (true){
+        std::vector<int> nextLevel;
+        for(int parentIndex : levels[level]){
+            for(int i=0; i<numChildren; i++){
+                addSeg = false;
+                if (level==0){
+                    angle = fullCircleDist(rng);
+                } else {
+                    float delta = thirdCircleDist(rng);
+                    angle = nodes[parentIndex].angle + delta;
+                }
+                Point next;
+                float nextX = nodes[parentIndex].x;
+                float nextY = nodes[parentIndex].y;
+                next.x = nextX;
+                next.y = nextY;
+                for(int j=0; j<stepSize; j++){
+                    nextX += std::cos(angle);
+                    nextY += std::sin(angle);
+                    if(goals.getTargetAt(nextX, nextY)!=-1){
+                        nextX += std::cos(angle) * 10;
+                        nextY += std::sin(angle) * 10;
+                        next.x = nextX;
+                        next.y = nextY;
+                        addChild = true;
+                        addSeg = true;
+                        break;
+                    }
+                    if(space.contains(nextX, nextY) && !space.getCollisions().contains(nextX, nextY)){
+                        next.x = nextX;
+                        next.y = nextY;
+                        addChild = true;
+                    } else {
+                        addChild = false;
+                        break;
+                    }
+                }
+                
+                if (addChild){
+                    next.angle=angle;
+                    next.parent = parentIndex;
+                    nodes.push_back(next);
+                    int newIndex = nodes.size() - 1;
+                    nextLevel.push_back(newIndex);
+                    if (addSeg){
+                        int idx = newIndex;
+                        while (nodes[idx].parent != -1) {
+                            int parentIdx = nodes[idx].parent;
+
+                            segments.push_back({
+                                nodes[parentIdx],
+                                nodes[idx]
+                            });
+
+                            idx = parentIdx;
+                        }
+                        numPaths++;
+                        if(numPaths>=totalPaths){
+                            return;
+                        }
+                    }
+                } 
+            }
         }
+        level+=1;
+        numChildren = std::max(numChildren/4, N);
+        levels[level]=nextLevel;
     }
-    return -1;
 }
 
 std::vector<std::string> getThemeNames(
@@ -33,8 +148,33 @@ std::vector<std::string> getThemeNames(
     return names;
 }
 
+float distancePointToSegment(
+    const sf::Vector2f& A,
+    const sf::Vector2f& B,
+    const sf::Vector2f& P)
+{
+    sf::Vector2f AB = B - A;
+    sf::Vector2f AP = P - A;
+
+    float ab2 = AB.x * AB.x + AB.y * AB.y; // |AB|^2
+    float dot = AP.x * AB.x + AP.y * AB.y; // AP · AB
+
+    float t = dot / ab2;
+
+    // Clamping al segmento
+    if (t < 0.f) t = 0.f;
+    if (t > 1.f) t = 1.f;
+
+    sf::Vector2f closest = A + t * AB;
+
+    sf::Vector2f diff = P - closest;
+
+    return std::sqrt(diff.x * diff.x + diff.y * diff.y);
+}
+
 
 int main() {
+
     std::random_device rd;
     std::mt19937 gen(rd());
     int widthWindow=1600;
@@ -48,6 +188,8 @@ int main() {
     bool toggleMoveView=false;
     bool toggleCreateIndividual = false;
     bool toggleCreateObstacle = false;
+    bool toggleCreateConvexObstacle = false;
+    bool toggleCreateStart = false;
     bool toggleCreateGoal = false;
     bool isDragging = false;
 
@@ -91,6 +233,7 @@ int main() {
 
     //Creacion del Panel Obstacles
     NumericInput inputNumSidesObstacle(3, 100, theme, {100,40}, "Num Sides");
+    NumericInput inputObstacleRadius(3, 100, 20, theme, {100,40}, "Radius");
     DropList inputObstaclePosition({"Center", "Random", "Custom"}, theme, {170,40}, "Position");
     Button buttonRegularObstacle("Add Regular Polygon", theme, {120,40}, " ");
     Button buttonConvexObstacle("Add Convex Shape", theme, {120,40}, " ");
@@ -99,6 +242,7 @@ int main() {
 
     WidgetPanel obstaclesPanel(theme, panelSize,{0,68}, 5, 5);
     obstaclesPanel.addElement(inputNumSidesObstacle);
+    obstaclesPanel.addElement(inputObstacleRadius);
     obstaclesPanel.addElement(inputObstaclePosition);
     obstaclesPanel.addElement(buttonRegularObstacle);
     obstaclesPanel.addElement(buttonConvexObstacle);
@@ -109,8 +253,8 @@ int main() {
     buttonClearObstacles.setEnabled(false);
 
     //Creacion del Panel Population
-    NumericInput inputPopulationSize(1, 5000, theme, {100,40}, "Population Size");
-    NumericInput inputIndividualRadius(1, 30, 10, theme, {100,40}, "Individual Radius");
+    NumericInput inputPopulationSize(1, 5000, 10, theme, {100,40}, "Population Size");
+    NumericInput inputIndividualRadius(1, 30, 5, theme, {100,40}, "Individual Radius");
     Button buttonCreatePopulation("Create Population", theme, {120,40}, " ");
     Button buttonAddIndividual("Toggle Add Individual", theme, {120,40}, " ");
     Button buttonDeleteIndividual("Delete Individual", theme, {120,40}, " ");
@@ -128,11 +272,11 @@ int main() {
     buttonDeletePopulation.setEnabled(false);
 
     // Creación del Panel Targets
-    NumericInput inputStartRadius(1, 200, 30, theme, {100,40}, "Start Radius");
+    NumericInput inputStartRadius(1, 200, 45, theme, {100,40}, "Start Radius");
     Button buttonAddStart("Toggle Add Start", theme, {120,40}, " ");
     Button buttonDeleteStart("Delete Start", theme, {120,40}, " ");
     Button buttonClearStarts("Clear Starts", theme, {120,40}, " ");
-    NumericInput inputGoalRadius(1, 200, 30, theme, {100,40}, "Goal Radius");
+    NumericInput inputGoalRadius(1, 200, 45, theme, {100,40}, "Goal Radius");
     Button buttonAddGoal("Toggle Add Goal", theme, {120,40}, " ");
     Button buttonDeleteGoal("Delete Goal", theme, {120,40}, " ");
     Button buttonClearGoals("Clear Goals", theme, {120,40}, " ");
@@ -164,6 +308,7 @@ int main() {
     simulationPanel.addElement(buttonStop);
     simulationPanel.setVisible(false);
     buttonStop.setEnabled(false);
+    buttonPause.setEnabled(false);
 
     //Creacion del Panel Appearance
     DropList inputThemes(getThemeNames(themes), theme, {170,40}, "Themes");
@@ -193,12 +338,13 @@ int main() {
     Population population(space, theme, 6.f);
     population.setRadius(5.f);
     int populationSize = 0;
+
     long selectedIndividual = -1;
     long selectedObstacle = -1;
     long selectedGoal = -1;
+    long selectedStart = -1;
+
     std::map<long,std::pair<int,int>> directions;
-    int numThreads = 8;
-    //Population populationOriginal = population;
     
     const float speed = 1; 
     sf::Clock clock;
@@ -217,12 +363,19 @@ int main() {
     sf::Vector2f lastMouseWorldPos;
 
     sf::CircleShape ghostInd(population.getRadius());
-    ghostInd.setFillColor(theme.getMainLighterColor());
 
     sf::CircleShape ghostGoal(10.0f);
-    
+    sf::CircleShape ghostObs(80.f, 3);
 
+    sf::ConvexShape convex;
+    convex.setPointCount(5);
+    int pointConvex=0;
+    
     sf::Cursor cursor;
+
+    std::map<long, size_t> currentSegmentIndex;
+
+    std::vector<std::pair<Point, Point>> segments;
 
     while (window.isOpen()) {
 
@@ -244,10 +397,40 @@ int main() {
 
             if (event.type == sf::Event::MouseWheelScrolled)
             {
-                if (event.mouseWheelScroll.delta > 0)
-                    simView.zoom(0.9f);   // zoom in
-                else
-                    simView.zoom(1.1f);   // zoom out
+                if (!toggleCreateIndividual && !toggleCreateObstacle && !toggleCreateStart && !toggleCreateGoal){
+                    if (event.mouseWheelScroll.delta > 0)
+                        simView.zoom(0.9f);   // zoom in
+                    else
+                        simView.zoom(1.1f);   // zoom out
+                } else {
+                    int step = 1;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) ||
+                        sf::Keyboard::isKeyPressed(sf::Keyboard::RControl)) {
+                        step = 5;
+                    }
+
+                    if (toggleCreateStart) {
+                        if (event.mouseWheelScroll.delta > 0)
+                            inputStartRadius.setValue(inputStartRadius.getValue() + step);
+                        else
+                            inputStartRadius.setValue(inputStartRadius.getValue() - step);
+                    }
+
+                    if (toggleCreateObstacle) {
+                        if (event.mouseWheelScroll.delta > 0)
+                            inputObstacleRadius.setValue(inputObstacleRadius.getValue() + step);
+                        else
+                            inputObstacleRadius.setValue(inputObstacleRadius.getValue() - step);
+                    }
+
+                    if (toggleCreateGoal) {
+                        if (event.mouseWheelScroll.delta > 0)
+                            inputGoalRadius.setValue(inputGoalRadius.getValue() + step);
+                        else
+                            inputGoalRadius.setValue(inputGoalRadius.getValue() - step);
+                    }
+                }
+                
             }
                 
             if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
@@ -267,11 +450,11 @@ int main() {
                 if (toggleCreateIndividual) {
                     if (event.mouseButton.y>space.getTopBoundary()){
                         int r = population.getRadius();
-                        float x = static_cast<float>(worldPos.x - r/2);
-                        float y = static_cast<float>(worldPos.y - r/2);
+                        float x = static_cast<float>(worldPos.x - r);
+                        float y = static_cast<float>(worldPos.y - r);
                         
 
-                        if (space.contains(x, y, r)) {
+                        if (space.contains(x+r, y+r, r)) {
                             Individual& newInd =
                                 population.createIndividual({static_cast<int>(x), static_cast<int>(y)});
                             populationSize++;
@@ -282,11 +465,10 @@ int main() {
                 } 
                 if (toggleCreateObstacle) {
                     if (event.mouseButton.y>space.getTopBoundary()){
-                        float x = static_cast<float>(worldPos.x);
-                        float y = static_cast<float>(worldPos.y);
-                        int r = 80;
-                        int radius = 80;
-                        if (space.contains(x, y, r)) {
+                        int r = inputObstacleRadius.getValue();
+                        float x = static_cast<float>(worldPos.x - r);
+                        float y = static_cast<float>(worldPos.y - r);
+                        if (space.contains(x+r, y+r, r)) {
                             obstacles.addRegularPolygon({static_cast<int>(x), static_cast<int>(y)},r, inputNumSidesObstacle.getValue());
                             buttonClearObstacles.setEnabled(true);
                         }
@@ -295,18 +477,89 @@ int main() {
                 if (toggleCreateGoal) {
                     if (event.mouseButton.y>space.getTopBoundary()){
                         int r = inputGoalRadius.getValue();
-                        float x = static_cast<float>(worldPos.x - r/2);
-                        float y = static_cast<float>(worldPos.y - r/2);
-                        
-                        int radius = 10.0f;
-                        if (space.contains(x, y, r)) {
+                        float x = static_cast<float>(worldPos.x - r);
+                        float y = static_cast<float>(worldPos.y - r);
+
+                        if (space.contains(x+r, y+r, r)) {
                             goals.addTarget({static_cast<int>(x), static_cast<int>(y)}, r);
+                            segments.clear();
+                            buttonClearGoals.setEnabled(true);
+                            int N = 3;        // ramificaciones por punto
+                            float step = 100;  // tamaño del paso
+                            int totalPaths = 1;
+
+                            for (auto& tempStart : starts.getTargets()) {
+                                auto* circle = dynamic_cast<sf::CircleShape*>(tempStart.shape.get());
+
+                                float radius = circle->getRadius();
+
+                                float centerX = circle->getPosition().x + radius;
+                                float centerY = circle->getPosition().y + radius;
+
+                                Point startPoint{centerX, centerY};
+
+                                grow(startPoint, N, step, totalPaths, segments, space, goals);
+                            }
+                            
+                            
+                            std::cout<<"Fin Grow"<<std::endl;
+                        }
+                    }
+                } 
+                if (toggleCreateStart) {
+                    if (event.mouseButton.y>space.getTopBoundary()){
+                        int r = inputStartRadius.getValue();
+                        float x = static_cast<float>(worldPos.x - r);
+                        float y = static_cast<float>(worldPos.y - r);
+
+                        if (space.contains(x+r, y+r, r)) {
+                            starts.addTarget({static_cast<int>(x), static_cast<int>(y)}, r);
                             buttonClearGoals.setEnabled(true);
                         }
                     }
                 } 
+                if (toggleCreateConvexObstacle){
+                    if (event.mouseButton.y>space.getTopBoundary()){
+                        float x = static_cast<float>(worldPos.x);
+                        float y = static_cast<float>(worldPos.y);
 
-                if (!toggleCreateIndividual && !toggleCreateObstacle && !toggleCreateGoal){
+                        if (space.contains(x, y)) {
+                            convex.setPoint(pointConvex, sf::Vector2f(x, y));
+                            pointConvex++;
+                        }
+                    }
+                    if (pointConvex == inputNumSidesObstacle.getValue()){
+                        bool isConvex = true;
+                        bool hasPositive = false;
+                        bool hasNegative = false;
+                        for (size_t i = 0; i < pointConvex; ++i) {
+
+                            const sf::Vector2f& A = convex.getPoint(i);
+                            const sf::Vector2f& B = convex.getPoint((i + 1) % pointConvex);
+                            const sf::Vector2f& C = convex.getPoint((i + 2) % pointConvex);
+
+                            float cross =
+                                (B.x - A.x) * (C.y - B.y) -
+                                (B.y - A.y) * (C.x - B.x);
+
+                            if (cross > 0)
+                                hasPositive = true;
+                            else if (cross < 0)
+                                hasNegative = true;
+
+                            if (hasPositive && hasNegative)
+                                isConvex = false;
+                        }
+                        toggleCreateConvexObstacle = false;
+                        cursor.loadFromSystem(sf::Cursor::Arrow);
+                        window.setMouseCursor(cursor);
+                        pointConvex=0;
+                        if(isConvex)
+                            obstacles.addConvexObstacle(convex);
+                        inputNumSidesObstacle.setEnabled(true);
+                    }
+                }
+                if (!toggleCreateIndividual && !toggleCreateObstacle && !toggleCreateStart && !toggleCreateGoal){
                     long clickedInd = population.getIndividualAt(worldPos.x, worldPos.y);
                     if (clickedInd!=-1) {
                         if(selectedIndividual!=-1)
@@ -346,8 +599,37 @@ int main() {
                             buttonDeleteGoal.setEnabled(true);
                         }
                     }
+                    
+                    long clickedStart = starts.getTargetAt(worldPos.x, worldPos.y);
+                    if (clickedStart!=-1) {
+                        if(selectedStart!=-1)
+                            starts.getTarget(selectedStart)->shape->setFillColor(theme.getStartColor());
+                        if(selectedStart==clickedStart){
+                            selectedStart = -1;
+                            buttonDeleteStart.setEnabled(false);
+                        } else {
+                            selectedStart = clickedStart;
+                            starts.getTarget(selectedStart)->shape->setFillColor(sf::Color::Red);
+                            buttonDeleteStart.setEnabled(true);
+                        }
+                    }
                 }
                 
+            }
+            if (event.type == sf::Event::MouseButtonPressed &&
+                event.mouseButton.button == sf::Mouse::Right)
+            {
+                if (toggleCreateIndividual || toggleCreateObstacle || toggleCreateStart || toggleCreateGoal || toggleCreateConvexObstacle){
+                    toggleCreateIndividual = false;
+                    toggleCreateObstacle = false;
+                    toggleCreateStart = false;
+                    toggleCreateGoal = false;
+                    toggleCreateConvexObstacle = false;
+                    pointConvex=0;
+                    cursor.loadFromSystem(sf::Cursor::Arrow);
+                    window.setMouseCursor(cursor);
+                    inputNumSidesObstacle.setEnabled(true);
+                }
             }
             
             // ---------------------------------
@@ -429,10 +711,8 @@ int main() {
             //        OBSTACLE PANEL
             // ---------------------------------
 
-            inputNumSidesObstacle.handleFocus(event,window);
-            inputNumSidesObstacle.handleKeyboardInput(event);
-            inputNumSidesObstacle.isDownButtonClicked(event,window);
-            inputNumSidesObstacle.isUpButtonClicked(event,window);
+            inputNumSidesObstacle.handleEvent(event,window);
+            inputObstacleRadius.handleEvent(event,window);
 
             if(inputObstaclePosition.isButtonClicked(event,window)){
                 inputObstaclePosition.setShowChoices(!inputObstaclePosition.getShowChoices());
@@ -440,13 +720,14 @@ int main() {
             inputObstaclePosition.isChoiceClicked(event,window);
 
             if(buttonRegularObstacle.isClicked(event, window)){
-                int radius = 80;
+                int radius = inputObstacleRadius.getValue();
+                int numSides= inputNumSidesObstacle.getValue();
                 std::pair<int,int> pos;
                 if(inputObstaclePosition.getSelected()=="Random"){
-                    obstacles.addRegularPolygon(radius, inputNumSidesObstacle.getValue());
+                    obstacles.addRegularPolygon(radius, numSides);
                 } else if(inputObstaclePosition.getSelected()=="Center"){
                     pos = {space.minX()+(space.getSize().first)/2-radius,space.minY()+(space.getSize().second)/2-radius};
-                    obstacles.addRegularPolygon(pos,radius, inputNumSidesObstacle.getValue());
+                    obstacles.addRegularPolygon(pos,radius, numSides);
                 } else {
                     toggleCreateObstacle = !toggleCreateObstacle;
                     if (toggleCreateObstacle)
@@ -456,6 +737,20 @@ int main() {
                     window.setMouseCursor(cursor);
                 }
                 
+            }
+
+            if(buttonConvexObstacle.isClicked(event, window)){
+                toggleCreateConvexObstacle = !toggleCreateConvexObstacle;
+                if (toggleCreateConvexObstacle){
+                    cursor.loadFromSystem(sf::Cursor::Cross);
+                    convex.setPointCount(inputNumSidesObstacle.getValue());
+                    inputNumSidesObstacle.setEnabled(false);
+                }
+                else{
+                    cursor.loadFromSystem(sf::Cursor::Arrow);
+                    inputNumSidesObstacle.setEnabled(true);
+                }
+                window.setMouseCursor(cursor);
             }
 
             if (buttonDeleteObstacle.isClicked(event, window) && selectedObstacle!=-1) {
@@ -472,35 +767,86 @@ int main() {
             //        POPULATION PANEL
             // ---------------------------------
             
-            inputPopulationSize.isDownButtonClicked(event,window);
-            inputPopulationSize.isUpButtonClicked(event,window);
-            inputPopulationSize.handleFocus(event,window);
-            inputPopulationSize.handleKeyboardInput(event);
+            inputPopulationSize.handleEvent(event,window);
 
-            inputIndividualRadius.isDownButtonClicked(event,window);
-            inputIndividualRadius.isUpButtonClicked(event,window);
-            inputIndividualRadius.handleFocus(event,window);
-            inputIndividualRadius.handleKeyboardInput(event);
+            inputIndividualRadius.handleEvent(event,window);
 
             if (buttonCreatePopulation.isClicked(event,window)){
                 populationSize = inputPopulationSize.getValue();
                 population.setRadius(inputIndividualRadius.getValue());
-                for(long i=0;i<populationSize;i++){
-                    Individual ind = population.createIndividual();
-                    int directionx = 0;
-                    int directiony = 0;
-                    do{
-                        directionx = dist(gen);
-                        directiony = dist(gen);
-                    } while (directionx==0 && directiony==0);
-                    directions[ind.getId()]={directionx,directiony};
+                if (starts.empty()){
+                    for(long i=0;i<populationSize;i++){
+                        Individual ind = population.createIndividual();
+                        int directionx = 0;
+                        int directiony = 0;
+                        do{
+                            directionx = dist(gen);
+                            directiony = dist(gen);
+                        } while (directionx==0 && directiony==0);
+                        directions[ind.getId()]={directionx,directiony};
+                    }
+                } else {
+                    std::vector<float> areas;
+                    std::vector<float> percentages;
+                    float total = 0;
+                    areas.reserve(starts.getTargets().size());
+
+                    for (const auto& start : starts.getTargets()) {
+                        float r = start.shape->getRadius();
+                        float area = static_cast<float>(M_PI) * r * r;
+                        areas.push_back(area);
+                        total += area;
+                    }
+                    for (float area : areas){
+                        float percentage = area / total;
+                        percentages.push_back(percentage);
+                    }
+                    int indexStart = 0;
+                    int popCount = 0;
+                    for (float percentage : percentages){
+                        const auto& start = starts.getTargets()[indexStart];
+                        float r = start.shape->getRadius();
+                        sf::Vector2f pos = start.shape->getPosition();
+                        for (long i=0; i<populationSize*percentage; i++){
+                            if (popCount==populationSize){
+                                break;
+                            }
+                            Individual ind = population.createIndividual({pos.x + r,pos.y + r}, r);
+                            int directionx = 0;
+                            int directiony = 0;
+                            do{
+                                directionx = dist(gen);
+                                directiony = dist(gen);
+                            } while (directionx==0 && directiony==0);
+                            directions[ind.getId()]={directionx,directiony};
+                            popCount++;
+                        }
+                        indexStart++;
+                    }
+                    while (popCount<populationSize){
+                        const auto& start = starts.getTargets()[indexStart];
+                        float r = start.shape->getRadius();
+                        sf::Vector2f pos = start.shape->getPosition();
+                        Individual ind = population.createIndividual({pos.x + r,pos.y + r}, r);
+                        int directionx = 0;
+                        int directiony = 0;
+                        do{
+                            directionx = dist(gen);
+                            directiony = dist(gen);
+                        } while (directionx==0 && directiony==0);
+                        directions[ind.getId()]={directionx,directiony};
+                        popCount++;
+                    }
                 }
+                
 
                 for (auto& [id, ind] : population.getIndividuals()) {
                     collisions.addShape(ind->getShape(), false);
                 }
                 buttonCreatePopulation.setEnabled(false);
                 buttonDeletePopulation.setEnabled(true);
+                inputIndividualRadius.setEnabled(false);
+                inputPopulationSize.setEnabled(false);
             }
 
             if (buttonAddIndividual.isClicked(event,window)){
@@ -516,42 +862,60 @@ int main() {
             if (buttonDeleteIndividual.isClicked(event, window) && selectedIndividual!=-1) {
                 population.removeIndividual(selectedIndividual);
                 directions.erase(selectedIndividual);
+                currentSegmentIndex.erase(selectedIndividual);
                 selectedIndividual=-1;
                 populationSize--;
                 buttonDeleteIndividual.setEnabled(false);
                 if(populationSize==0){
                     buttonCreatePopulation.setEnabled(true);
+                    inputIndividualRadius.setEnabled(true);
+                    inputPopulationSize.setEnabled(true);
                 }
             }
 
             if (buttonDeletePopulation.isClicked(event, window) && populationSize>0) {
                 population.clear();
+                currentSegmentIndex.clear();
                 populationSize=0;
                 selectedIndividual = -1;
                 buttonCreatePopulation.setEnabled(true);
                 buttonDeletePopulation.setEnabled(false);
+                inputIndividualRadius.setEnabled(true);
+                inputPopulationSize.setEnabled(true);
             }
 
             // ---------------------------------
             //        GOAL PANEL
             // ---------------------------------
 
-            inputStartRadius.isDownButtonClicked(event,window);
-            inputStartRadius.isUpButtonClicked(event,window);
-            inputStartRadius.handleFocus(event,window);
-            inputStartRadius.handleKeyboardInput(event);
+            inputStartRadius.handleEvent(event,window);
+            inputGoalRadius.handleEvent(event,window);
 
-            inputGoalRadius.isDownButtonClicked(event,window);
-            inputGoalRadius.isUpButtonClicked(event,window);
-            inputGoalRadius.handleFocus(event,window);
-            inputGoalRadius.handleKeyboardInput(event);
+            if (buttonAddStart.isClicked(event, window)){
+                toggleCreateStart = !toggleCreateStart;
+                if (toggleCreateStart){
+                    cursor.loadFromSystem(sf::Cursor::Hand);
+                }
+                else{
+                    cursor.loadFromSystem(sf::Cursor::Arrow);
+                }
+                window.setMouseCursor(cursor);
+            }
+
+            if (buttonDeleteStart.isClicked(event, window) && selectedStart!=-1) {
+                starts.removeTarget(selectedStart);
+                selectedStart=-1;
+                buttonDeleteStart.setEnabled(false);
+            }
 
             if (buttonAddGoal.isClicked(event, window)){
                 toggleCreateGoal = !toggleCreateGoal;
-                if (toggleCreateGoal)
+                if (toggleCreateGoal){
                     cursor.loadFromSystem(sf::Cursor::Hand);
-                else
+                }
+                else{
                     cursor.loadFromSystem(sf::Cursor::Arrow);
+                }
                 window.setMouseCursor(cursor);
             }
 
@@ -569,6 +933,7 @@ int main() {
                 start = true;
                 buttonStart.setEnabled(false);
                 buttonStop.setEnabled(true);
+                buttonPause.setEnabled(true);
             }
 
             if (buttonPause.isClicked(event, window)){
@@ -584,6 +949,7 @@ int main() {
                 start = false;
                 buttonStart.setEnabled(true);
                 buttonStop.setEnabled(false);
+                buttonPause.setEnabled(false);
             }
 
 
@@ -608,7 +974,7 @@ int main() {
                 space.setTheme(newTheme);
                 obstacles.setTheme(newTheme);
                 goals.setColor(newTheme.getGoalColor());
-                ghostInd.setFillColor(theme.getMainLighterColor());
+                starts.setColor(newTheme.getStartColor());
             }
             if (buttonZoomIn.isClicked(event, window)){
                 simView.zoom(0.9f);
@@ -636,31 +1002,117 @@ int main() {
         // ---------------------------------
         //       MOVIMIENTO CONTINUO
         // ---------------------------------
-        if(start && !pause){
+        if (start && !pause) {
             for (auto& [id, ind] : population.getIndividuals()) {
-                std::uniform_real_distribution<float> prob(0.00f, 1.00f);
-                if (prob(gen) < 0.0001f) { 
-                    int directionx = 0;
-                    int directiony = 0;
-                    do{
-                        directionx = dist(gen);
-                        directiony = dist(gen);
-                    } while (directionx==0 && directiony==0);
-                    directions[id]={directionx,directiony};
-                }
-                float dx = directions[id].first * speed * dt;
-                float dy = directions[id].second * speed * dt;
-                if(!ind->move(dx,dy)){
-                    int directionx = 0;
-                    int directiony = 0;
-                    do{
-                        directionx = dist(gen);
-                        directiony = dist(gen);
-                    } while (directionx==0 && directiony==0);
-                    directions[id]={directionx,directiony};
+                bool pass=false;
+                sf::Vector2f topLeft1 = ind->getShape().getPosition();  
+                float r1 = ind->getShape().getRadius();
+                sf::Vector2f c1 = {
+                    topLeft1.x + r1,
+                    topLeft1.y + r1
                 };
+                for(const auto& goal: goals.getTargets()){
+                    sf::Vector2f topLeft2 = goal.shape->getPosition(); 
+                    float r2 = goal.shape->getRadius();
+                    sf::Vector2f c2 = {
+                        topLeft2.x + r2,
+                        topLeft2.y + r2
+                    };
+
+                    float dx = c1.x - c2.x;
+                    float dy = c1.y - c2.y;
+                    float distance = std::sqrt(dx * dx + dy * dy);
+                    if(distance + r1 <= r2){
+                        pass=true;
+                    }
+                }
+                if(pass)
+                    continue;
+                
+                // Si hay segmentos disponibles, usar el más cercano
+                if (!segments.empty()) {
+                    // Obtener índice actual del segmento
+                    size_t segIdx;
+
+                    if (!currentSegmentIndex.count(id)) {
+                        // PRIMER FRAME → buscar el segmento más cercano
+
+                        float minDist = std::numeric_limits<float>::max();
+
+                        for (size_t i = 0; i < segments.size(); ++i) {
+                            
+                            const auto& seg = segments[i];
+                            sf::Vector2f A(seg.first.x, seg.first.y);
+                            sf::Vector2f B(seg.second.x, seg.second.y);
+                            float distStart = distancePointToSegment(A, B, ind->getShape().getPosition());
+
+                            if (distStart < minDist) {
+                                minDist = distStart;
+                                segIdx = i;
+                            }
+                        }
+
+                        currentSegmentIndex[id] = segIdx;  // inicializar
+                    }
+                    else {
+                        segIdx = currentSegmentIndex[id];  // ya estaba inicializado
+                    }
+                    // Tomar el segmento actual
+                    const auto& seg = segments[segIdx];
+
+                    // Vector hacia el final del segmento
+                    float dx = seg.second.x - ind->getShape().getPosition().x;
+                    float dy = seg.second.y - ind->getShape().getPosition().y;
+                    float length = std::sqrt(dx*dx + dy*dy);
+
+                    if (length > 0.0f) {
+                        dx = (dx / length) * speed * dt;
+                        dy = (dy / length) * speed * dt;
+
+                        // Intentar mover
+                        if (ind->move(dx, dy)) {
+                            // Si alcanzó el final del segmento, pasar al siguiente
+                            float distToEnd = std::sqrt(
+                                (seg.second.x - ind->getShape().getPosition().x)*(seg.second.x - ind->getShape().getPosition().x) +
+                                (seg.second.y - ind->getShape().getPosition().y)*(seg.second.y - ind->getShape().getPosition().y)
+                            );
+                            if (distToEnd < speed * dt * 1.5f) { // tolerancia
+                                currentSegmentIndex[id] = std::min(segIdx + 1, segments.size() - 1);
+                            }
+                        } else {
+                            // Si no puede moverse, buscar otro segmento cercano
+                            // (opcional: podrías recorrer todos los segmentos y cambiar al que permita mover)
+                        }
+                    }
+                } else {
+                    // Movimiento aleatorio si no hay segmentos
+                    std::uniform_real_distribution<float> prob(0.00f, 1.00f);
+                    if (prob(gen) < 0.0001f) { 
+                        int directionx = 0;
+                        int directiony = 0;
+                        do {
+                            directionx = dist(gen);
+                            directiony = dist(gen);
+                        } while (directionx == 0 && directiony == 0);
+                        directions[id] = {directionx, directiony};
+                    }
+
+                    float dx = directions[id].first * speed * dt;
+                    float dy = directions[id].second * speed * dt;
+
+                    if (!ind->move(dx, dy)) {
+                        int directionx = 0;
+                        int directiony = 0;
+                        do {
+                            directionx = dist(gen);
+                            directiony = dist(gen);
+                        } while (directionx == 0 && directiony == 0);
+                        directions[id] = {directionx, directiony};
+                    }
+                }
+
             }
-        }   
+        }
      
         if (window.hasFocus()) {  // evita movimiento si la ventana no está activa
             if (isDragging){
@@ -685,34 +1137,77 @@ int main() {
         window.clear(theme.getBackgroundColor());   
         window.setView(simView); 
         space.draw(); 
-        obstacles.draw();
         goals.draw();
+        starts.draw();
+        
+        for (const auto& s : segments) {
+            drawThickLine(window, sf::Vector2f(s.first.x, s.first.y), sf::Vector2f(s.second.x, s.second.y), 1, theme.getSecondaryLightColor());
+        }
+
         population.draw();
+        obstacles.draw();
+        
 
+        sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
+        sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel);
         if(toggleCreateIndividual){
-            // Posición del mouse relativa a la ventana
-            sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
-            sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel);
-
-            // Mover el círculo
-            int r = inputIndividualRadius.getValue();
-            ghostInd.setPosition(mouseWorld.x - r/2, mouseWorld.y - r/2);
+            int r = population.getRadius();
+            ghostInd.setPosition(mouseWorld.x - r, mouseWorld.y - r);
+            sf::Color c = theme.getMainLighterColor();
+            c.a = 80; 
+            ghostInd.setFillColor(c);
             ghostInd.setRadius(r);
             window.draw(ghostInd);
         }
 
         if(toggleCreateGoal){
-            // Posición del mouse relativa a la ventana
-            sf::Vector2i mousePixel = sf::Mouse::getPosition(window);
-            sf::Vector2f mouseWorld = window.mapPixelToCoords(mousePixel);
-
-            // Mover el círculo
             int r = inputGoalRadius.getValue();
-            ghostGoal.setPosition(mouseWorld.x - r/2, mouseWorld.y - r/2);
-            ghostGoal.setFillColor(theme.getGoalColor());
+            ghostGoal.setPosition(mouseWorld.x - r, mouseWorld.y - r);
+            sf::Color c = theme.getGoalColor();
+            c.a = 80; 
+            ghostGoal.setFillColor(c);
             ghostGoal.setRadius(r);
             window.draw(ghostGoal);
         }
+
+        if(toggleCreateStart){
+            int r = inputStartRadius.getValue();
+            ghostGoal.setPosition(mouseWorld.x - r, mouseWorld.y - r);
+            sf::Color c = theme.getStartColor();
+            c.a = 80; 
+            ghostGoal.setFillColor(c);
+            ghostGoal.setRadius(r);
+            window.draw(ghostGoal);
+        }
+        if(toggleCreateObstacle){
+            int r = inputObstacleRadius.getValue();
+            ghostObs.setPointCount(inputNumSidesObstacle.getValue());
+            ghostObs.setPosition(mouseWorld.x - r, mouseWorld.y - r);
+            sf::Color c = theme.getSecondaryColor();
+            c.a = 80; 
+            ghostObs.setFillColor(c);
+            ghostObs.setRadius(r);
+            window.draw(ghostObs);
+        }
+        if(toggleCreateConvexObstacle){
+            sf::Color c = theme.getSecondaryColor();
+            c.a = 80; 
+            float thickness = 4.f;
+            if(pointConvex>=1){
+                sf::Vector2f p1(convex.getPoint(pointConvex-1));
+                sf::Vector2f p2(mouseWorld.x, mouseWorld.y);
+                drawThickLine(window, p1, p2, thickness, c);
+            }
+            if(pointConvex>=2){
+                for(int i=0;i<pointConvex-1;i++){
+                    sf::Vector2f p1(convex.getPoint(i));
+                    sf::Vector2f p2(convex.getPoint(i+1));
+                    drawThickLine(window, p1, p2, thickness, c);
+                }
+                
+            }
+        }
+        
 
         window.setView(hudView); 
         menuPanel.draw(window);

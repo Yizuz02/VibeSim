@@ -1,28 +1,51 @@
 #include "Obstacles.hpp"
 #include <cmath>
 #include <random>
+#include<iostream>
 
 bool pointInShape2(const sf::Shape& shape, float x, float y) {
-    // Transformar a espacio local del shape
+
     sf::Vector2f local =
         shape.getInverseTransform().transformPoint(x, y);
 
     std::size_t count = shape.getPointCount();
-    bool inside = false;
+    int windingNumber = 0;
 
-    for (std::size_t i = 0, j = count - 1; i < count; j = i++) {
-        sf::Vector2f pi = shape.getPoint(i);
-        sf::Vector2f pj = shape.getPoint(j);
+    for (std::size_t i = 0; i < count; ++i) {
 
-        bool intersect =
-            ((pi.y > local.y) != (pj.y > local.y)) &&
-            (local.x < (pj.x - pi.x) * (local.y - pi.y) / (pj.y - pi.y) + pi.x);
+        sf::Vector2f p1 = shape.getPoint(i);
+        sf::Vector2f p2 = shape.getPoint((i + 1) % count);
 
-        if (intersect)
-            inside = !inside;
+        if (p1.y <= local.y) {
+
+            if (p2.y > local.y) {
+
+                double cross =
+                    (double)(p2.x - p1.x) * (local.y - p1.y) -
+                    (double)(local.x - p1.x) * (p2.y - p1.y);
+
+                if (cross > 0)
+                    ++windingNumber;
+            }
+
+        } else {
+
+            if (p2.y <= local.y) {
+
+                double cross =
+                    (double)(p2.x - p1.x) * (local.y - p1.y) -
+                    (double)(local.x - p1.x) * (p2.y - p1.y);
+
+                if (cross < 0)
+                    --windingNumber;
+            }
+        }
     }
-    return inside;
+
+    return windingNumber != 0;
 }
+
+
 
 
 // ---------------- CONSTRUCTOR ----------------
@@ -48,6 +71,20 @@ long Obstacles::addRegularPolygon(
     return nextId++;
 }
 
+long Obstacles::addConvexObstacle(sf::ConvexShape shape)
+{
+    auto poly = std::make_unique<sf::ConvexShape>(shape);
+
+    poly->setFillColor(theme->getSecondaryDarkColor());
+
+    // Registrar colisiones
+    space->getCollisions().addShape(*poly, true);
+
+    obstacles.push_back({ nextId, std::move(poly) });
+    return nextId++;
+}
+
+
 
 long Obstacles::addRegularPolygon(
     float radius,
@@ -68,7 +105,7 @@ long Obstacles::addRegularPolygon(
 
     Collisions& collisions = space->getCollisions();
 
-    constexpr int MAX_ATTEMPTS = 5000;
+    constexpr int MAX_ATTEMPTS = 10000;
     std::pair<int,int> pos;
     sf::FloatRect box;
     bool valid = false;
@@ -112,8 +149,6 @@ long Obstacles::addRegularPolygon(
     }
 
     poly->setFillColor(theme->getSecondaryDarkColor());
-
-    // 🔥 ahora sí, registrar colisiones
     collisions.addShape(*poly, true);
 
     obstacles.push_back({ nextId, std::move(poly) });
@@ -125,7 +160,8 @@ long Obstacles::addRegularPolygon(
 long Obstacles::getObstacleAt(float x, float y) const {
     for (const auto& obs : obstacles) {
         if (obs.shape->getGlobalBounds().contains(x, y)) {
-            return obs.id;
+            if(pointInShape2(*obs.shape, x, y))
+                return obs.id;
         }
     }
     return -1;

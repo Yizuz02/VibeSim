@@ -39,6 +39,7 @@ Theme::Theme(const sf::Color& component,
       spaceColor(spaceColor),
       backgroundColor(backgroundColor),
       goalColor(goalColor),
+      startColor(startColor),
       inputColor(input),
       fontColor(fontC),
       font(f) {

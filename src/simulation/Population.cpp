@@ -43,7 +43,7 @@ Individual& Population::createIndividual(std::pair<int,int> center, int radius) 
 
     Collisions& collisions = space->getCollisions();
 
-    constexpr int MAX_ATTEMPTS = 100;
+    constexpr int MAX_ATTEMPTS = 1000;
     std::pair<int,int> pos;
     sf::FloatRect box;
     bool valid = false;
@@ -56,8 +56,8 @@ Individual& Population::createIndividual(std::pair<int,int> center, int radius) 
         box = sf::FloatRect(
             static_cast<float>(pos.first),
             static_cast<float>(pos.second),
-            this->radius * 2.f,
-            this->radius * 2.f
+            this->radius * 1.3f,
+            this->radius * 1.3f
         );
 
         int left   = std::floor(box.left);

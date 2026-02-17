@@ -30,6 +30,8 @@ public:
         unsigned int sides
     );
 
+    long addConvexObstacle(sf::ConvexShape shape);
+
     long addRegularPolygon(float radius, unsigned int sides);
 
     // ---------------- SELECCIÓN ----------------

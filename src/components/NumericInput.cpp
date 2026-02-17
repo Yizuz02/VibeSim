@@ -177,6 +177,15 @@ void NumericInput::setTheme(Theme &theme){
     setupInputPadding();
     setupInputMargins();
     setupValueText();
+    if(enabled){
+        valueText.setFillColor(theme.getFontColor());
+        triangleIconDown.setFillColor(theme.getFontColor());
+        triangleIconUp.setFillColor(theme.getFontColor());
+    } else {
+        valueText.setFillColor(theme.getDisabledFontColor());
+        triangleIconDown.setFillColor(theme.getDisabledFontColor());
+        triangleIconUp.setFillColor(theme.getDisabledFontColor());
+    }
     setupLabelText(pos);
     upButton.setTheme(theme);
     downButton.setTheme(theme);
@@ -186,6 +195,26 @@ int NumericInput::getValue(){
     return value;
 }
 
+void NumericInput::setEnabled(bool value){
+    enabled = value;
+    if(value){
+        valueText.setFillColor(theme.getFontColor());
+        triangleIconDown.setFillColor(theme.getFontColor());
+        triangleIconUp.setFillColor(theme.getFontColor());
+    } else {
+        valueText.setFillColor(theme.getDisabledFontColor());
+        triangleIconDown.setFillColor(theme.getDisabledFontColor());
+        triangleIconUp.setFillColor(theme.getDisabledFontColor());
+    }
+}
+
+void NumericInput::setValue(int newValue){
+    if (newValue>=minValue && newValue<=maxValue){
+        value = newValue;
+        buffer=std::to_string(value);
+        setupValueText();
+    }
+}
 
 void NumericInput::draw(sf::RenderWindow& window) {  
     if (visible){
@@ -307,5 +336,14 @@ void NumericInput::handleKeyboardInput(sf::Event& event) {
         if (event.key.code == sf::Keyboard::Enter) {
             focused = false;
         }
+    }
+}
+
+void NumericInput::handleEvent(sf::Event& event, sf::RenderWindow& window){
+    if(enabled){
+        handleFocus(event, window);
+        isDownButtonClicked(event, window);
+        isUpButtonClicked(event, window);
+        handleKeyboardInput(event);
     }
 }

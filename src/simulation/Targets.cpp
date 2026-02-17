@@ -17,7 +17,7 @@ long Targets::addTarget(std::pair<float,float> position, float radius) {
     sf::FloatRect bounds = circle->getGlobalBounds();
 
     if (bounds.left < space->minX() ||
-        bounds.top  < space->minY() ||
+        bounds.top < space->minY() ||
         bounds.left + bounds.width  > space->maxX() ||
         bounds.top  + bounds.height > space->maxY())
         return -1;
@@ -29,10 +29,7 @@ long Targets::addTarget(std::pair<float,float> position, float radius) {
     int top    = std::floor(bounds.top);
     int bottom = std::ceil (bounds.top  + bounds.height);
 
-    for (int y = top; y <= bottom; ++y)
-        for (int x = left; x <= right; ++x)
-            if (collisions.contains(x, y))
-                return -1;
+    
 
     targets.push_back({ nextId, std::move(circle) });
     return nextId++;
@@ -91,11 +88,28 @@ long Targets::addTarget(float radius) {
 
 // ---------- SELECCIÓN ----------
 long Targets::getTargetAt(float x, float y) const {
-    for (const auto& t : targets)
-        if (t.shape->getGlobalBounds().contains(x, y))
+    for (const auto& t : targets) {
+
+        const sf::CircleShape* circle =
+            dynamic_cast<const sf::CircleShape*>(t.shape.get());
+
+        if (!circle) continue;
+
+        float radius = circle->getRadius();
+        sf::Vector2f center = circle->getPosition();
+
+        // Si el origen no está centrado:
+        center += sf::Vector2f(radius, radius);
+
+        float dx = x - center.x;
+        float dy = y - center.y;
+
+        if (dx * dx + dy * dy <= radius * radius)
             return t.id;
+    }
     return -1;
 }
+
 
 
 // ---------- ACCESO ----------
@@ -115,6 +129,9 @@ const std::vector<Targets::Target>& Targets::getTargets() const {
     return targets;
 }
 
+bool Targets::empty() const {
+    return targets.empty();
+}
 
 // ---------- COLOR ----------
 void Targets::setColor(const sf::Color& color) {
@@ -144,3 +161,4 @@ void Targets::draw() {
     for (auto& t : targets)
         space->getWindow().draw(*t.shape);
 }
+
