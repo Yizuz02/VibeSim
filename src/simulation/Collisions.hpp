@@ -15,6 +15,7 @@ public:
     // --- Básico ---
     void clear();
     bool contains(int x, int y) const;
+    bool contains(const sf::FloatRect& box) const;
 
     std::unordered_set<uint64_t>& data();
     const std::unordered_set<uint64_t>& data() const;

@@ -42,6 +42,24 @@ bool Collisions::contains(int x, int y) const {
     return cells.count(encode(x, y)) > 0;
 }
 
+bool Collisions::contains(const sf::FloatRect& box) const {
+    int startX = static_cast<int>(std::floor(box.left));
+    int endX   = static_cast<int>(std::floor(box.left + box.width));
+    int startY = static_cast<int>(std::floor(box.top));
+    int endY   = static_cast<int>(std::floor(box.top + box.height));
+
+    for(int x = startX; x <= endX; ++x) {
+        for(int y = startY; y <= endY; ++y) {
+            if(cells.count(encode(x, y)) > 0) {
+                return true;  // hay colisión dentro del box
+            }
+        }
+    }
+
+    return false; // ninguna celda ocupada dentro del rectángulo
+}
+
+
 std::unordered_set<uint64_t>& Collisions::data() {
     return cells;
 }

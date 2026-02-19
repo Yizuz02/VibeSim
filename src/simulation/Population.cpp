@@ -51,13 +51,13 @@ Individual& Population::createIndividual(std::pair<int,int> center, int radius) 
     int squaredRadius = radius * radius;
 
     for (int i = 0; i < MAX_ATTEMPTS; ++i) {
-        pos = { distx(gen), disty(gen) };
+        pos = {static_cast<int>(distx(gen)), static_cast<int>(disty(gen))};
 
         box = sf::FloatRect(
             static_cast<float>(pos.first),
             static_cast<float>(pos.second),
-            this->radius * 1.3f,
-            this->radius * 1.3f
+            this->radius * 1.8f,
+            this->radius * 1.8f
         );
 
         int left   = std::floor(box.left);

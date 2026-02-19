@@ -51,7 +51,8 @@ void grow(const Point& startPoint,
           int totalPaths,
           std::vector<std::pair<Point, Point>>& segments,
           Space& space,
-          Targets& goals)
+          Targets& goals,
+          int r)
 {
     float angle;
     int numChildren = 40;
@@ -61,6 +62,7 @@ void grow(const Point& startPoint,
     int level = 0;
     levels[level] = {0};
     int numPaths = 0;
+    sf::FloatRect box;
 
     std::vector<Point> nodes;
     nodes.push_back(startPoint);
@@ -81,19 +83,27 @@ void grow(const Point& startPoint,
                 float nextY = nodes[parentIndex].y;
                 next.x = nextX;
                 next.y = nextY;
+                
                 for(int j=0; j<stepSize; j++){
                     nextX += std::cos(angle);
                     nextY += std::sin(angle);
-                    if(goals.getTargetAt(nextX, nextY)!=-1){
-                        nextX += std::cos(angle) * 10;
-                        nextY += std::sin(angle) * 10;
+                    box = sf::FloatRect(
+                        static_cast<float>(nextX),
+                        static_cast<float>(nextY),
+                        r*2.0f,
+                        r*2.0f
+                    );
+                    int target = goals.getTargetAt(nextX, nextY);
+                    if(target!=-1){
+                        nextX += std::cos(angle) * r * 3;
+                        nextY += std::sin(angle) * r * 3;
                         next.x = nextX;
                         next.y = nextY;
                         addChild = true;
                         addSeg = true;
                         break;
                     }
-                    if(space.contains(nextX, nextY) && !space.getCollisions().contains(nextX, nextY)){
+                    if(space.contains(box) && !space.getCollisions().contains(box)){
                         next.x = nextX;
                         next.y = nextY;
                         addChild = true;
@@ -486,7 +496,7 @@ int main() {
                             buttonClearGoals.setEnabled(true);
                             int N = 3;        // ramificaciones por punto
                             float step = 100;  // tamaño del paso
-                            int totalPaths = 1;
+                            int totalPaths = 50;
 
                             for (auto& tempStart : starts.getTargets()) {
                                 auto* circle = dynamic_cast<sf::CircleShape*>(tempStart.shape.get());
@@ -498,7 +508,7 @@ int main() {
 
                                 Point startPoint{centerX, centerY};
 
-                                grow(startPoint, N, step, totalPaths, segments, space, goals);
+                                grow(startPoint, N, step, totalPaths, segments, space, goals, inputIndividualRadius.getValue());
                             }
                             
                             
@@ -819,6 +829,7 @@ int main() {
                                 directiony = dist(gen);
                             } while (directionx==0 && directiony==0);
                             directions[ind.getId()]={directionx,directiony};
+                            std::cout << ind.getId() << std::endl;
                             popCount++;
                         }
                         indexStart++;
@@ -837,11 +848,6 @@ int main() {
                         directions[ind.getId()]={directionx,directiony};
                         popCount++;
                     }
-                }
-                
-
-                for (auto& [id, ind] : population.getIndividuals()) {
-                    collisions.addShape(ind->getShape(), false);
                 }
                 buttonCreatePopulation.setEnabled(false);
                 buttonDeletePopulation.setEnabled(true);
@@ -906,6 +912,9 @@ int main() {
                 starts.removeTarget(selectedStart);
                 selectedStart=-1;
                 buttonDeleteStart.setEnabled(false);
+                if(starts.empty()){
+                    segments.clear();
+                }
             }
 
             if (buttonAddGoal.isClicked(event, window)){
@@ -923,6 +932,9 @@ int main() {
                 goals.removeTarget(selectedGoal);
                 selectedGoal=-1;
                 buttonDeleteGoal.setEnabled(false);
+                if(goals.empty()){
+                    segments.clear();
+                }
             }
 
             // ---------------------------------
@@ -1004,16 +1016,20 @@ int main() {
         // ---------------------------------
         if (start && !pause) {
             for (auto& [id, ind] : population.getIndividuals()) {
-                bool pass=false;
                 sf::Vector2f topLeft1 = ind->getShape().getPosition();  
                 float r1 = ind->getShape().getRadius();
-                sf::Vector2f c1 = {
-                    topLeft1.x + r1,
-                    topLeft1.y + r1
-                };
-                for(const auto& goal: goals.getTargets()){
+                                sf::Vector2f c1 = {
+                                    topLeft1.x + r1,
+                                    topLeft1.y + r1
+                                };bool insideGoal = false;
+                sf::Vector2f goalCenter;
+                float goalRadius = 0.f;
+
+                for(const auto& goal : goals.getTargets()) {
+
                     sf::Vector2f topLeft2 = goal.shape->getPosition(); 
                     float r2 = goal.shape->getRadius();
+
                     sf::Vector2f c2 = {
                         topLeft2.x + r2,
                         topLeft2.y + r2
@@ -1022,12 +1038,46 @@ int main() {
                     float dx = c1.x - c2.x;
                     float dy = c1.y - c2.y;
                     float distance = std::sqrt(dx * dx + dy * dy);
+
                     if(distance + r1 <= r2){
-                        pass=true;
+                        insideGoal = true;
+                        goalCenter = c2;
+                        goalRadius = r2;
+                        break;
                     }
                 }
-                if(pass)
+
+                if(insideGoal) {
+
+                    std::uniform_real_distribution<float> angleDist(0.f, 2.f * 3.14159265f);
+                    std::uniform_real_distribution<float> radiusDist(0.f, goalRadius - r1);
+
+                    float angle = angleDist(gen);
+                    float rad   = radiusDist(gen);
+
+                    float targetX = goalCenter.x + std::cos(angle) * rad;
+                    float targetY = goalCenter.y + std::sin(angle) * rad;
+
+                    // convertir a top-left (porque tu shape usa posición como esquina)
+                    float newLeft = targetX - r1;
+                    float newTop  = targetY - r1;
+
+                    sf::Vector2f current = ind->getShape().getPosition();
+                    float dx = newLeft - current.x;
+                    float dy = newTop  - current.y;
+
+                    // mover suavemente hacia ese punto
+                    float length = std::sqrt(dx*dx + dy*dy);
+                    if(length > 0.f){
+                        dx = (dx / length) * speed * dt;
+                        dy = (dy / length) * speed * dt;
+                        ind->move(dx, dy);
+                    }
+
                     continue;
+                }
+
+
                 
                 // Si hay segmentos disponibles, usar el más cercano
                 if (!segments.empty()) {
@@ -1035,6 +1085,7 @@ int main() {
                     size_t segIdx;
 
                     if (!currentSegmentIndex.count(id)) {
+                        
                         // PRIMER FRAME → buscar el segmento más cercano
 
                         float minDist = std::numeric_limits<float>::max();
@@ -1051,39 +1102,117 @@ int main() {
                                 segIdx = i;
                             }
                         }
-
                         currentSegmentIndex[id] = segIdx;  // inicializar
+                        std::cout <<"Id: "<< id << " Seg: " << currentSegmentIndex[id] << std::endl;
                     }
                     else {
                         segIdx = currentSegmentIndex[id];  // ya estaba inicializado
                     }
                     // Tomar el segmento actual
                     const auto& seg = segments[segIdx];
+                    sf::Vector2f P = ind->getShape().getPosition();
+                    sf::Vector2f A(seg.first.x, seg.first.y);
+                    sf::Vector2f B(seg.second.x, seg.second.y);
 
-                    // Vector hacia el final del segmento
-                    float dx = seg.second.x - ind->getShape().getPosition().x;
-                    float dy = seg.second.y - ind->getShape().getPosition().y;
-                    float length = std::sqrt(dx*dx + dy*dy);
+                    sf::Vector2f AB = B - A;
+                    sf::Vector2f AP = P - A;
 
-                    if (length > 0.0f) {
+                    float ab2 = AB.x * AB.x + AB.y * AB.y;
+
+                    // Manejar segmento degenerado
+                    sf::Vector2f closest;
+                    if (ab2 == 0.f) {
+                        closest = A;
+                    } else {
+                        float t = (AP.x * AB.x + AP.y * AB.y) / ab2;
+
+                        // Clamp al segmento
+                        if (t < 0.f) t = 0.f;
+                        if (t > 1.f) t = 1.f;
+
+                        closest = A + t * AB;
+                    }
+
+                    // Vector hacia el punto más cercano del segmento
+                    float dx = closest.x - P.x;
+                    float dy = closest.y - P.y;
+
+                    float length = std::sqrt(dx * dx + dy * dy);
+
+                    if (length < 0.2f) {
+                        dx = seg.second.x - ind->getShape().getPosition().x;
+                        dy = seg.second.y - ind->getShape().getPosition().y;
+                        length = std::sqrt(dx*dx + dy*dy);
                         dx = (dx / length) * speed * dt;
                         dy = (dy / length) * speed * dt;
-
                         // Intentar mover
-                        if (ind->move(dx, dy)) {
-                            // Si alcanzó el final del segmento, pasar al siguiente
+                        const int maxAttempts = 18;
+                        bool moved = false;
+
+                        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+
+                            float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
+                            float tryDx = dx * factor;
+                            float tryDy = dy * factor;
+
+                            if (ind->move(tryDx, tryDy)) {
+                                moved = true;
+                                break;
+                            }
+                        }
+                        if (moved){
                             float distToEnd = std::sqrt(
-                                (seg.second.x - ind->getShape().getPosition().x)*(seg.second.x - ind->getShape().getPosition().x) +
-                                (seg.second.y - ind->getShape().getPosition().y)*(seg.second.y - ind->getShape().getPosition().y)
+                            (seg.second.x - ind->getShape().getPosition().x)*(seg.second.x - ind->getShape().getPosition().x) +
+                            (seg.second.y - ind->getShape().getPosition().y)*(seg.second.y - ind->getShape().getPosition().y)
                             );
                             if (distToEnd < speed * dt * 1.5f) { // tolerancia
-                                currentSegmentIndex[id] = std::min(segIdx + 1, segments.size() - 1);
+                            currentSegmentIndex.erase(id);
                             }
-                        } else {
-                            // Si no puede moverse, buscar otro segmento cercano
-                            // (opcional: podrías recorrer todos los segmentos y cambiar al que permita mover)
                         }
-                    }
+                    } else {
+                        dx = (dx / length) * speed * dt;
+                        dy = (dy / length) * speed * dt;
+                        const int maxAttempts = 18;
+                        bool moved = false;
+
+                        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+
+                            float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
+                            float tryDx = dx * factor;
+                            float tryDy = dy * factor;
+
+                            if (ind->move(tryDx, tryDy)) {
+                                moved = true;
+                                break;
+                            }
+                        }
+                        if (!moved){
+                            dx = seg.second.x - ind->getShape().getPosition().x;
+                            dy = seg.second.y - ind->getShape().getPosition().y;
+                            length = std::sqrt(dx*dx + dy*dy);
+                            dx = (dx / length) * speed * dt;
+                            dy = (dy / length) * speed * dt;
+                            // Intentar mover
+                            const int maxAttempts = 18;
+                            bool moved = false;
+
+                            for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+
+                                float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
+                                float tryDx = dx * factor;
+                                float tryDy = dy * factor;
+
+                                if (ind->move(tryDx, tryDy)) {
+                                    moved = true;
+                                    break;
+                                }
+                            }
+
+                        }
+                    } 
+                    
+
+                    
                 } else {
                     // Movimiento aleatorio si no hay segmentos
                     std::uniform_real_distribution<float> prob(0.00f, 1.00f);

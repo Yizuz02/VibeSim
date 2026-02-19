@@ -54,6 +54,7 @@ public:
     float maxY() const;
 
     bool contains(float x, float y, float radius = 0.f) const;
+    bool contains(const sf::FloatRect& box) const;
 
     // Render
     void draw();

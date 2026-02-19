@@ -113,6 +113,13 @@ bool Space::contains(float x, float y, float radius) const {
         y + radius <= maxY();
 }
 
+bool Space::contains(const sf::FloatRect& box) const {
+    return
+        box.left >= minX() &&
+        box.top >= minY() &&
+        box.left + box.width  <= maxX() &&
+        box.top  + box.height <= maxY();
+}
 
 void Space::draw() {
     window.draw(background);
