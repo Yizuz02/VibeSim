@@ -1,0 +1,730 @@
+% ============================================================
+% PLANTILLA DE REPORTE DE PROYECTO - SERVICIO SOCIAL
+% Autores:
+%   Ian Pablo Martinez Fuentes
+%   Jesus Enrique Vazquez Martinez
+% ============================================================
+
+\documentclass[12pt,a4paper]{article}
+
+% ---------- Paquetes ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ---------- Configuración de página ----------
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=3cm,
+    right=2.5cm
+}
+
+\onehalfspacing
+
+% ---------- Hipervínculos ----------
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue,
+    pdftitle={Reporte de Proyecto de Servicio Social},
+    pdfauthor={Ian Pablo Martinez Fuentes, Jesus Enrique Vazquez Martinez}
+}
+
+% ---------- Encabezado y pie de página ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Reporte de Proyecto -- Servicio Social}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- Formato de títulos ----------
+\titleformat{\section}
+    {\normalfont\Large\bfseries}
+    {\thesection.}
+    {0.5em}
+    {}
+
+\titleformat{\subsection}
+    {\normalfont\large\bfseries}
+    {\thesubsection.}
+    {0.5em}
+    {}
+
+% ---------- Datos del proyecto ----------
+\newcommand{\NombreProyecto}{VibeSim}
+\newcommand{\Institucion}{Instituto Politécnico Nacional}
+\newcommand{\Periodo}{Noviembre 2025 - Julio 2026}
+\newcommand{\Carrera}{Ingeniería en Inteligencia Artificial}
+\newcommand{\InstitucionEducativa}{Escuela Superior de Cómputo -- Instituto Politécnico Nacional}
+
+% ============================================================
+% DOCUMENTO
+% ============================================================
+
+\begin{document}
+
+% ---------- PORTADA ----------
+\begin{titlepage}
+    \centering
+
+    \vspace*{1.5cm}
+
+    {\Large \textbf{\InstitucionEducativa}\par}
+
+    \vspace{1.5cm}
+
+    {\large \Carrera\par}
+
+    \vspace{2.5cm}
+
+    {\LARGE \textbf{Reporte de Proyecto de Servicio Social}\par}
+
+    \vspace{1cm}
+
+    {\Large \textbf{\NombreProyecto}\par}
+
+    \vspace{2.5cm}
+
+    \begin{tabular}{rl}
+        \textbf{Autores:} & Ian Pablo Martinez Fuentes \\
+                          & Jesus Enrique Vazquez Martinez \\[0.5cm]
+        \textbf{Institución:} & \Institucion \\
+        \textbf{Periodo:} & \Periodo
+    \end{tabular}
+
+    \vfill
+
+    {\large Ciudad de México\par}
+    {\large \today\par}
+
+\end{titlepage}
+
+% ---------- RESUMEN ----------
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+Escriba aquí un resumen breve del proyecto. Describa el problema abordado,
+la solución desarrollada, las tecnologías principales utilizadas y los
+resultados obtenidos.
+
+% ---------- ÍNDICE ----------
+\tableofcontents
+\newpage
+
+% ============================================================
+% 1. TÍTULO DEL PROYECTO
+% ============================================================
+
+\section{Título del proyecto}
+
+\textbf{\NombreProyecto}
+
+En esta sección puede proporcionar una descripción breve del proyecto y
+explicar qué representa dentro de las actividades realizadas durante el
+servicio social.
+
+% ============================================================
+% 2. RESUMEN
+% ============================================================
+
+\section{Resumen}
+
+El presente resumen describe el proyecto \emph{VibeSim}, desarrollado entre noviembre de 2025 y febrero de 2026 en el marco del servicio social en \emph{The Artificial Life Robotics Lab} (ALIROB), laboratorio de carácter internacional donde convergen la teoría y la electrónica para explorar dinámicas complejas de sistemas no centralizados, comportamiento colectivo, enjambres, autoorganización e inteligencia artificial, implementados en robots pequeños de bajo costo.
+
+\begin{itemize}
+\item \textbf{Problema o necesidad identificada.} El diseño de estrategias de navegación para colectivos de entidades, desde organismos hasta robots autónomos, suele depender de motores comerciales o simuladores especializados, poco flexibles y ajenos al dominio de la vida artificial. ALIROB requería una herramienta genérica, visual e interactiva que permitiera modelar el problema común de desplazar una población desde zonas de despliegue hasta zonas objetivo, esquivando obstáculos, como base previa a cualquier implementación física.
+
+\item \textbf{Objetivo principal del proyecto.} Desarrollar \emph{VibeSim}, un simulador 2D de propósito general para la búsqueda de caminos y la navegación de poblaciones, cuyo algoritmo de generación de rutas está inspirado en el comportamiento de exploración y ramificación de los hongos, de modo que sirva como base reutilizable para distintas clases de agentes; organismos, robots, nanobots, y, a su vez, como ejercicio de construcción de una interfaz gráfica completa desde cero.
+
+\item \textbf{Solución propuesta.} Se construyó una aplicación de escritorio en la que el usuario configura un espacio de simulación acotado, obstáculos (polígonos regulares o convexos), zonas de inicio y zonas meta, así como el tamaño y radio de la población. Al fijar las metas, un algoritmo de crecimiento por ramificación aleatoria; inspirado en el micelio de un hongo, explora el espacio libre desde cada zona de inicio, evitando obstáculos, hasta alcanzar una meta; la rama resultante se reconstruye como una ruta, conformando una red de caminos entre los orígenes y los destinos. Durante la simulación, cada individuo se incorpora a la ruta más cercana de la red y la recorre con resolución de colisiones por ejes, tanto contra los obstáculos como contra otros individuos; al llegar a una meta, deambula aleatoriamente dentro de ella. Tanto el motor de simulación como la interfaz (paneles, botones, campos numéricos, listas desplegables, barra de título y temas visuales) fueron desarrollados desde cero, sin motores de juego ni bibliotecas de interfaz de terceros.
+
+\item \textbf{Tecnologías o herramientas utilizadas.} C++17 como lenguaje principal; SFML 2.6 para gráficos, ventana y manejo de eventos; CMake para la construcción del proyecto; nlohmann/json para la definición y carga de temas visuales; técnicas de geometría computacional (pruebas de punto-en-polígono y proyección punto-segmento) para la detección y el seguimiento de rutas; y una rejilla discreta de colisiones con hashing espacial que permite consultas de ocupación en tiempo constante.
+
+\item \textbf{Principales resultados obtenidos.} Se obtuvo una prueba de concepto funcional que genera en tiempo real redes de rutas libres de obstáculos entre las zonas de despliegue y las metas, y que simula poblaciones numerosas de forma interactiva con buen rendimiento en laptops convencionales, gracias a la eficiencia de la rejilla de colisiones y a la ligereza de la interfaz propia. El proyecto fue presentado ante el Dr. Genaro Juárez Martínez, integrante de ALIROB, y queda disponible como base para futuros experimentos de comportamiento colectivo, autoorganización y robótica de enjambres.
+\end{itemize}
+
+% ============================================================
+% 3. INTRODUCCIÓN
+% ============================================================
+
+\section{Introducción}
+
+La navegación de colectivos de agentes autónomos (organismos, robots o incluso entidades a escala nano) en entornos con obstáculos constituye un problema clásico y recurrente en la vida artificial, la robótica de enjambres y los sistemas complejos. Tradicionalmente, el diseño de estrategias de desplazamiento desde zonas de despliegue hasta zonas objetivo ha dependido de motores comerciales o de simuladores especializados, herramientas que suelen resultar poco flexibles, costosas o ajenas al dominio conceptual de la vida artificial. En este contexto surge la necesidad de contar con plataformas genéricas, visuales e interactivas que permitan modelar, explorar y validar comportamientos colectivos antes de cualquier implementación física.
+
+El presente proyecto se desarrolló en el marco del servicio social en \emph{The Artificial Life Robotics Lab} (ALIROB), en la Escuela Superior de Cómputo (ESCOM) del Instituto Politécnico Nacional. En ALIROB convergen la teoría de sistemas complejos, la electrónica y la robótica para estudiar dinámicas no centralizadas, comportamiento colectivo, autoorganización e inteligencia artificial emergente, implementadas habitualmente en robots pequeños y asequibles~\cite{gacetaIPN2024,alirob}. El laboratorio ha impulsado, entre otras líneas, el uso de modelos bioinspirados, en particular aquellos derivados del comportamiento de exploración y formación de redes del mixomiceto \emph{Physarum polycephalum} (slime mould)— tanto en simulación como en prototipos físicos de robots autónomos de monitoreo~\cite{hernandez2024tesis,adamatzky2012maze}.
+
+La situación que dio origen a \emph{VibeSim} fue precisamente la carencia, dentro del laboratorio, de una herramienta de propósito general que permitiera configurar de manera interactiva un espacio acotado, obstáculos (polígonos regulares o convexos), zonas de inicio y zonas meta, y simular el desplazamiento de una población numerosa mientras se genera, en tiempo real, una red de rutas libres de obstáculos. Dicha generación de rutas se inspira en el crecimiento por ramificación aleatoria del micelio fúngico: desde cada zona de despliegue el algoritmo explora el espacio libre, evita obstáculos y, al alcanzar una meta, reconstruye la rama como camino. Posteriormente, cada individuo se incorpora a la ruta más cercana de la red y la recorre con resolución de colisiones, deambulando aleatoriamente una vez dentro de la zona objetivo. Esta aproximación no solo responde a una necesidad operativa del laboratorio, sino que se alinea con una línea consolidada de investigación en computación no convencional y planificación de trayectorias bioinspirada~\cite{adamatzky2012maze,jones2015morphological,luo2021swarm,tian2023slime}.
+
+La importancia del problema radica en que disponer de un simulador ligero, construido desde cero y libre de dependencias de motores de juego o bibliotecas de interfaz de terceros, facilita la experimentación rápida de hipótesis sobre autoorganización, resolución de colisiones en poblaciones densas y transferencia de estrategias de navegación desde el dominio biológico hacia la robótica de enjambres. Trabajos previos han demostrado que modelos inspirados en el crecimiento fúngico y en \emph{Physarum} son capaces de resolver laberintos, generar redes de transporte eficientes y coordinar enjambres de robots de forma descentralizada~\cite{adamatzky2012maze,luo2021swarm,scientificreports2025physarum}. \emph{VibeSim} se inserta en esta tradición, ofreciendo una base reutilizable para distintas clases de agentes y, al mismo tiempo, un ejercicio completo de ingeniería de software e interfaz gráfica.
+
+Desde la perspectiva del servicio social y de la formación académica de los autores, el proyecto permitió aplicar y profundizar conocimientos de programación de sistemas (C++17), gráficos en tiempo real (SFML), geometría computacional, estructuras de datos espaciales (rejilla de colisiones con hashing) y diseño de interfaces desde cero. Contribuyó, además, a los objetivos institucionales del servicio social al vincular la formación profesional con un entorno de investigación real, internacional y multidisciplinario, generando una herramienta concreta que queda disponible para futuros experimentos de comportamiento colectivo y robótica de enjambres en ALIROB.
+
+
+% ============================================================
+% 4. OBJETIVOS
+% ============================================================
+
+\section{Objetivos}
+
+\subsection{Objetivo general}
+Desarrollar un simulador 2D de propósito general que permita generar redes de rutas libres de obstáculos inspiradas en el crecimiento miceliar y simular la navegación de poblaciones de agentes en entornos configurables.
+
+\subsection{Objetivos específicos}
+\begin{enumerate}
+    \item Implementar la generación dinámica de redes de caminos mediante un algoritmo de crecimiento por ramificación.
+    \item Permitir la configuración interactiva del entorno (espacio, obstáculos, zonas de inicio/meta y parámetros de población).
+    \item Simular el movimiento de los agentes sobre la red generada con manejo eficiente de colisiones.
+    \item Entregar un prototipo funcional de buen rendimiento, documentado y presentado ante el laboratorio.
+\end{enumerate}
+
+% ============================================================
+% 5. DESCRIPCIÓN DEL PROBLEMA
+% ============================================================
+
+\section{Descripción del problema}
+
+En ALIROB se desarrollan y evalúan estrategias de navegación para poblaciones de robots pequeños y de bajo costo. El problema consiste en lograr que múltiples agentes se desplacen desde una zona de despliegue hasta una zona objetivo, evitando obstáculos y coordinando su comportamiento de manera colectiva y descentralizada.
+
+Antes del desarrollo de este proyecto no existía en ALIROB un sistema de simulación destinado específicamente a modelar y visualizar este tipo de escenarios de manera genérica e interactiva.
+
+\subsection*{Problema o necesidad existente}
+Existía la necesidad de contar con una herramienta flexible, visual y controlable que permitiera generar y evaluar rutas libres de obstáculos para colectivos de agentes antes de cualquier implementación física.
+
+\subsection*{Cómo se realizaba anteriormente el proceso}
+Los algoritmos de generación de rutas y navegación se implementaban y evaluaban de forma directa sobre los robots físicos del laboratorio. Cada prueba requería programar el hardware, configurar el entorno real y observar el comportamiento de los dispositivos.
+
+\subsection*{Limitaciones de la situación existente}
+La ausencia de un simulador dedicado presentaba las siguientes limitaciones:
+\begin{itemize}
+    \item Cada modificación del algoritmo exigía reprogramar y volver a probar los robots.
+    \item Resultaba difícil reproducir escenarios complejos o experimentar con distintas configuraciones de obstáculos, zonas de inicio y metas sin reconstruir el entorno físico.
+    \item No era posible visualizar de forma clara y simultánea el comportamiento de poblaciones numerosas en entornos arbitrarios.
+\end{itemize}
+
+\subsection*{Requerimientos que debía cumplir la solución}
+La solución debía cumplir, al menos, los siguientes requerimientos:
+\begin{itemize}
+    \item Permitir la configuración interactiva de un espacio de simulación acotado, obstáculos (polígonos regulares o convexos), zonas de inicio y zonas meta, así como el tamaño y radio de la población.
+    \item Generar de forma automática y en tiempo real una red de rutas libres de obstáculos mediante un algoritmo inspirado en el crecimiento y ramificación del micelio fúngico.
+    \item Simular el movimiento de los agentes sobre dicha red, incluyendo resolución de colisiones entre individuos y contra obstáculos.
+    \item Ofrecer una interfaz gráfica completa y visualmente clara, desarrollada desde cero, que facilitara la observación de cualquier escenario.
+    \item Ser eficiente en laptops convencionales y quedar disponible como base reutilizable para futuros experimentos.
+\end{itemize}
+
+% ============================================================
+% 6. METODOLOGÍA / DESARROLLO
+% ============================================================
+
+\section{Desarrollo}
+
+\subsection{Análisis de requerimientos}
+
+Los requerimientos del proyecto se identificaron a partir de dos fuentes: las necesidades planteadas por el asesor del laboratorio, el Dr. Genaro Juárez Martínez, quien solicitó explícitamente la capacidad de crear figuras convexas, la generación de poblaciones y el empleo de un algoritmo bioinspirado para la búsqueda de caminos; y el análisis realizado por el equipo de desarrollo, autodirigido e integrado por dos miembros, sobre el flujo de trabajo que debía soportar la herramienta: configurar un escenario, generar la red de rutas y simular la navegación de una población. El resultado se documenta en los requerimientos funcionales y no funcionales siguientes.
+
+\begin{table}[H]
+    \centering
+    \caption{Requerimientos funcionales identificados.}
+    \begin{tabular}{p{2.5cm} p{9cm}}
+        \toprule
+        \textbf{ID} & \textbf{Descripción} \\
+        \midrule
+        RF-01 & Definir un espacio de simulación rectangular con ancho y alto configurables en el rango de 200 a 10\,000 unidades. \\
+        RF-02 & Crear obstáculos poligonales regulares indicando número de lados (3--100), radio (3--100) y posición (centro, aleatoria o personalizada mediante clic). \\
+        RF-03 & Crear obstáculos convexos arbitrarios colocando sus vértices mediante clics; el sistema debe validar la convexidad de la figura antes de aceptarla. \\
+        RF-04 & Gestionar obstáculos: seleccionarlos con clic, eliminarlos de forma individual o borrarlos en su totalidad. \\
+        RF-05 & Crear una población de $N$ individuos ($1 \le N \le 5000$) con radio configurable (1--30), distribuidos dentro de las zonas de inicio de forma proporcional al área de cada zona o, en ausencia de éstas, en posiciones libres aleatorias del espacio. \\
+        RF-06 & Gestionar individuos: agregarlos individualmente con clic, eliminar uno o eliminar la población completa. \\
+        RF-07 & Definir zonas de inicio y zonas meta como círculos de radio configurable (1--200), con creación mediante clic, selección, eliminación individual y borrado total. \\
+        RF-08 & Generar automáticamente una red de rutas libres de obstáculos que conecte las zonas de inicio con las zonas meta mediante el algoritmo bioinspirado, al momento de definir las metas. \\
+        RF-09 & Controlar la simulación: iniciarla, pausarla/reanudarla y detenerla. \\
+        RF-10 & Desplazar a cada individuo de forma autónoma siguiendo la red de rutas hacia las metas, evadiendo obstáculos y a otros individuos; al alcanzar una meta, el individuo debe permanecer dentro de ella. \\
+        RF-11 & Controlar la vista y la apariencia: zoom (acercar, alejar y restablecer), desplazamiento de cámara, centrado de la vista y cambio de tema visual en tiempo de ejecución. \\
+        RF-12 & Proporcionar retroalimentación visual al crear elementos: vista previa (``fantasma'') de la entidad y cambio de cursor según la herramienta activa. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Requerimientos no funcionales identificados.}
+    \begin{tabular}{p{2.5cm} p{9cm}}
+        \toprule
+        \textbf{ID} & \textbf{Descripción} \\
+        \midrule
+        NFR-01 & Rendimiento: la simulación debe mantenerse en tiempo real, con interacción fluida y poblaciones numerosas, en laptops convencionales. \\
+        NFR-02 & Portabilidad: la aplicación debe poder compilarse y ejecutarse en Windows, macOS y Linux mediante CMake y SFML. \\
+        NFR-03 & Usabilidad: las acciones principales deben ejecutarse con clic y ofrecer retroalimentación inmediata de su efecto. \\
+        NFR-04 & Mantenibilidad: el código debe organizarse en módulos con responsabilidades separadas (interfaz, simulación, estilos y utilerías). \\
+        NFR-05 & Extensibilidad: el modelo de simulación debe ser independiente del tipo de entidad representada, para servir como base tanto a organismos como a robots autónomos. \\
+        NFR-06 & Configurabilidad: los temas visuales deben definirse en archivos JSON externos, modificables sin necesidad de recompilar. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Diseño de la solución}
+
+\subsubsection{Arquitectura}
+
+La solución se estructuró por capas, separando la interfaz gráfica del dominio de la simulación. La capa de \textbf{presentación} está formada por un kit de componentes gráficos propios (botones, campos numéricos, listas desplegables, paneles y barra de título) que se dibujan sobre la ventana de SFML. La capa de \textbf{dominio} concentra la lógica de la simulación: el espacio, las colisiones, los obstáculos, las zonas y la población. La capa de \textbf{estilos} administra los temas de color y la tipografía. El módulo principal orquesta los eventos de entrada, la actualización de la simulación y el renderizado. No se requiere base de datos; la única persistencia del proyecto son los archivos de configuración JSON de los temas.
+
+\begin{table}[H]
+    \centering
+    \caption{Componentes principales del proyecto.}
+    \begin{tabular}{p{3.5cm} p{8cm}}
+        \toprule
+        \textbf{Componente} & \textbf{Responsabilidad} \\
+        \midrule
+        \texttt{Space} & Define los límites y la posición del mundo simulado y resuelve consultas de contención de elementos. \\
+        \texttt{Collisions} & Mantiene una rejilla discreta de celdas ocupadas (con hashing espacial) y responde consultas de colisión en tiempo casi constante. \\
+        \texttt{Obstacles} & Administra los polígonos regulares y convexos; los rasteriza sobre la rejilla de colisiones. \\
+        \texttt{Targets} & Representa las zonas de inicio y las zonas meta (dos instancias sobre la misma clase). \\
+        \texttt{Population} / \texttt{Individual} & Administra las entidades simuladas: su creación, distribución, registro en la rejilla de colisiones y movimiento con evasión. \\
+        \texttt{Theme} / \texttt{ColorUtils} & Genera paletas de color con variaciones (claras/oscuras) y carga los temas desde archivos JSON. \\
+        Componentes UI & Kit de widgets propio (\texttt{Button}, \texttt{NumericInput}, \texttt{DropList}, \texttt{WidgetPanel}, \texttt{TitleBar}) para la interfaz. \\
+        \texttt{main.cpp} & Orquesta paneles y menús, el bucle de eventos, la generación de la red de rutas y el bucle de simulación y renderizado. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Flujo de información}
+
+\begin{enumerate}
+    \item El usuario configura el escenario a través de los paneles: dimensiones del espacio, obstáculos, zonas de inicio y meta, y parámetros de la población.
+    \item Los obstáculos y los individuos se registran en la rejilla de colisiones, que es la estructura compartida para toda la detección de ocupación.
+    \item Al definir una zona meta, se dispara la generación de la red de rutas: el algoritmo bioinspirado explora el espacio libre desde cada zona de inicio hasta alcanzar las metas.
+    \item En el bucle principal, cada fotograma procesa los eventos de entrada, actualiza la posición de cada individuo conforme al algoritmo de movimiento y renderiza el espacio, las zonas, la red de rutas, la población, los obstáculos y la interfaz.
+\end{enumerate}
+
+\subsubsection{Algoritmos centrales}
+
+A continuación se describen los algoritmos más importantes del proyecto. El primero genera la red de rutas y constituye el núcleo bioinspirado de la solución: replica el crecimiento exploratorio de un hongo, cuyas ramificaciones (hifas) se extienden por el medio, evitan los obstáculos y, al encontrar una fuente nutritiva (la meta), establecen una conexión desde el origen. A diferencia de un algoritmo de ruta única, este enfoque produce una \emph{red} de caminos compartible por toda la población, acorde con los sistemas no centralizados que estudia el laboratorio.
+
+\begin{algorithm}[H]
+\caption{Generación de la red de rutas (crecimiento inspirado en hongos).}
+\begin{algorithmic}[1]
+\Require punto de inicio $s$, espacio libre $E$, metas $G$, número de rutas deseado $T$
+\Ensure red de rutas $R$ (segmentos que conectan $s$ con las metas)
+\State crear el nodo raíz en $s$; $nivel \gets 0$; $rutas \gets 0$; $numHijos \gets 40$
+\While{$rutas < T$}
+    \For{cada nodo $p$ del nivel actual}
+        \For{$i \gets 1$ hasta $numHijos$}
+            \If{$nivel = 0$}
+                \State $\acute{a}ngulo \gets$ valor aleatorio uniforme en $[0, 2\pi)$
+            \Else
+                \State $\acute{a}ngulo \gets \acute{a}ngulo_{padre} +$ perturbaci\'on aleatoria en $[-\pi/4,\ \pi/4]$
+            \EndIf
+            \State avanzar en pasos unitarios a lo largo del \'angulo
+            \If{la posici\'on alcanza una meta $g \in G$}
+                \State reconstruir la rama desde el nodo ra\'iz (retrazado de padres)
+                \State agregar la rama a $R$; $rutas \gets rutas + 1$
+                \If{$rutas = T$} \State \Return \EndIf
+            \ElsIf{la posici\'on sale de $E$ o colisiona con un obst\'aculo}
+                \State descartar la rama (el nodo no se agrega al \'arbol)
+            \Else
+                \State agregar el nuevo nodo al siguiente nivel
+            \EndIf
+        \EndFor
+    \EndFor
+    \State $nivel \gets nivel + 1$; $numHijos \gets \max(numHijos/4,\ N)$
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+El segundo algoritmo controla el movimiento de los individuos. Cada entidad se dirige al punto más próximo de su segmento asignado (mediante proyección punto--segmento); si la posición resultante estuviera ocupada —por un obstáculo o por otro individuo, ambos registrados en la misma rejilla— el desplazamiento se reintenta con magnitud decreciente, lo que produce un deslizamiento natural a lo largo de los obstáculos y evita la interpenetración.
+
+\begin{algorithm}[H]
+\caption{Movimiento de individuos con evasión de colisiones.}
+\begin{algorithmic}[1]
+\For{cada individuo $i$, cada fotograma}
+    \If{$i$ se encuentra dentro de una meta}
+        \State mover $i$ hacia un punto aleatorio dentro de la meta; \textbf{continuar}
+    \EndIf
+    \If{no existe red de rutas}
+        \State movimiento aleatorio; al colisionar o con probabilidad baja, cambiar de direcci\'on
+    \Else
+        \If{$i$ no tiene segmento asignado}
+            \State asignar el segmento de la red m\'as cercano a $i$ (proyecci\'on punto--segmento)
+        \EndIf
+        \State calcular el desplazamiento hacia el punto m\'as pr\'oximo del segmento asignado
+        \For{$factor$ en la secuencia decreciente $1.0,\ 0.95,\ \dots,\ 0.15$}
+            \If{la posici\'on resultante est\'a dentro del espacio \textbf{y} no colisiona en la rejilla}
+                \State mover a $i$ y actualizar sus celdas en la rejilla; \textbf{terminar} reintentos
+            \EndIf
+        \EndFor
+        \If{$i$ alcanz\'o el extremo de su segmento o qued\'o bloqueado}
+            \State liberar el segmento asignado (se reasignar\'a el m\'as cercano en el siguiente fotograma)
+        \EndIf
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+El tercer algoritmo valida la convexidad de las figuras trazadas con clics, un requerimiento explícito del asesor. La figura se acepta únicamente si el producto cruz de cada terna de vértices consecutivos conserva el mismo signo.
+
+\begin{algorithm}[H]
+\caption{Validación de convexidad de un obstáculo trazado con clics.}
+\begin{algorithmic}[1]
+\Require vértices $v_0, \dots, v_{n-1}$ capturados en orden
+\Ensure aceptar o rechazar la figura como obstáculo
+\State $hayPositivo \gets falso$; $hayNegativo \gets falso$
+\For{$i \gets 0$ hasta $n-1$}
+    \State $A \gets v_i$; $B \gets v_{i+1}$; $C \gets v_{i+2}$ \Comment{índices módulo $n$}
+    \State $cruz \gets (B_x-A_x)(C_y-B_y) - (B_y-A_y)(C_x-B_x)$
+    \If{$cruz > 0$} \State $hayPositivo \gets verdadero$
+    \ElsIf{$cruz < 0$} \State $hayNegativo \gets verdadero$ \EndIf
+\EndFor
+\If{$hayPositivo$ \textbf{y} $hayNegativo$}
+    \State rechazar la figura (no es convexa)
+\Else
+    \State aceptar la figura y rasterizarla en la rejilla de colisiones
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Tecnologías y herramientas}
+
+La siguiente tabla resume las tecnologías y herramientas utilizadas y su función dentro del proyecto.
+
+\begin{table}[H]
+    \centering
+    \caption{Tecnologías utilizadas en el proyecto.}
+    \begin{tabular}{p{4cm} p{7.5cm}}
+        \toprule
+        \textbf{Tecnología} & \textbf{Uso dentro del proyecto} \\
+        \midrule
+        C++17 & Lenguaje de programación principal; programación orientada a objetos, plantillas y biblioteca estándar (contenedores y generación de números aleatorios). \\
+        SFML 2.6 & Biblioteca multimedia: renderizado 2D, creación de la ventana, manejo de eventos y figuras geométricas (círculos, polígonos, rectángulos). \\
+        CMake $\geq$ 3.20 & Sistema de construcción multiplataforma del proyecto. \\
+        nlohmann/json & Biblioteca \emph{header-only} para la lectura de los archivos de tema en formato JSON. \\
+        Geometría computacional (propia) & Pruebas punto-en-polígono (ocupación y convexidad) y proyección punto--segmento (seguimiento de rutas). \\
+        Rejilla de colisiones (propia) & Estructura de celdas ocupadas con hashing espacial para consultas de colisión en tiempo casi constante. \\
+        Kit de widgets (propio) & Componentes de interfaz desarrollados desde cero: botones, campos numéricos, listas desplegables, paneles y barra de título. \\
+        Git & Control de versiones durante todo el desarrollo. \\
+        Sistemas operativos & Desarrollo y pruebas funcionales en Windows y macOS; pruebas de rendimiento adicionales en Linux. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Implementación}
+
+El desarrollo se llevó a cabo entre noviembre de 2025 y febrero de 2026 por un equipo autodirigido de dos integrantes, organizado en fases incrementales con control de versiones. Las actividades principales fueron las siguientes:
+
+\begin{enumerate}
+    \item \textbf{Base de la interfaz.} Construcción de la ventana sin bordes, la barra de título personalizada y los primeros componentes gráficos (\texttt{Button}, \texttt{NumericInput}, \texttt{DropList}, \texttt{WidgetPanel}) desarrollados desde cero, así como la estructura de paneles de configuración.
+    \item \textbf{Espacio, obstáculos y población.} Implementación del espacio de simulación redimensionable, de la creación de obstáculos regulares y convexos con su validación, de la generación de poblaciones con distribución en zonas de inicio y de la selección y eliminación de elementos mediante clic.
+    \item \textbf{Sistema de temas y control de vista.} Definición del modelo de temas con variaciones de color generadas automáticamente, carga de temas desde archivos JSON y adición del panel de apariencia con zoom, desplazamiento y centrado de cámara.
+    \item \textbf{Sistema de zonas y red de rutas.} Implementación de las zonas de inicio y meta y del algoritmo bioinspirado de generación de la red de rutas, junto con el seguimiento de segmentos por proyección punto--segmento.
+    \item \textbf{Depuración de colisiones.} Corrección de fallos en la detección de colisiones y en la navegación (reasignación de segmentos, tolerancias de llegada y deslizamiento), hasta lograr un comportamiento estable.
+    \item \textbf{Documentación.} Redacción del \texttt{README} del proyecto con instrucciones de construcción multiplataforma.
+\end{enumerate}
+
+Las decisiones técnicas más relevantes y su justificación fueron las siguientes:
+
+\begin{itemize}
+    \item \textbf{Desarrollo de la interfaz desde cero.} Tanto el motor de simulación como el kit de widgets se construyeron sin motores de juego ni bibliotecas de interfaz de terceros. Esto otorgó control total sobre el renderizado —clave para el rendimiento con poblaciones grandes— y representó un ejercicio integral de diseño de una interfaz gráfica.
+    \item \textbf{Rejilla discreta de colisiones con hashing espacial.} En lugar de resolver colisiones con pruebas geométricas continuas, se rasterizan las figuras sobre celdas discretas codificadas como enteros de 64 bits en una tabla hash, lo que permite consultas de ocupación en tiempo casi constante y barridos incrementales eficientes. Obstáculos e individuos comparten la misma rejilla, de modo que la evasión entre individuos y contra obstáculos se resuelve con un único mecanismo.
+    \item \textbf{Movimiento con reintentos de magnitud decreciente.} Al estar bloqueado el desplazamiento, el individuo reintenta el movimiento con pasos más cortos, lo que produce un deslizamiento natural a lo largo de los obstáculos y evita la interpenetración sin necesidad de resolver empujes.
+    \item \textbf{Algoritmo bioinspirado de red de rutas.} El algoritmo basado en el crecimiento de un hongo se adoptó por solicitud del asesor y porque, a diferencia de un algoritmo de ruta única (p. ej., Dijkstra o A*), genera una red de caminos ramificada que conecta los orígenes con las metas y puede ser compartida por toda la población, lo que se alinea con los sistemas no centralizados y de comportamiento colectivo que estudia ALIROB.
+    \item \textbf{Generación de rutas una sola vez.} La red se calcula al definir las metas y no por individuo, con lo que su costo se amortiza entre toda la población.
+    \item \textbf{Distribución proporcional al área.} La población se reparte entre las zonas de inicio según el área de cada zona, modelando escenarios de despliegue realistas.
+    \item \textbf{Temas configurables en JSON.} La separación de los temas en archivos externos permite personalizar la apariencia sin recompilar y facilitó la depuración visual durante el desarrollo.
+\end{itemize}
+
+% TODO: complementar con los resultados cuantitativos de las pruebas de rendimiento
+% (número máximo de individuos en tiempo real, fotogramas por segundo) una vez concluidas.
+La aplicación se validó funcionalmente durante su desarrollo en Windows y macOS, y se sometió a pruebas adicionales de rendimiento; los resultados cuantitativos se reportan en la sección de resultados de este documento.
+% ============================================================
+% 7. IMPLEMENTACIÓN
+% ============================================================
+
+\section{Implementación}
+
+En esta sección se documenta el resultado de la implementación: las funcionalidades construidas, la organización del flujo de trabajo de la aplicación y los pasos necesarios para reproducirla. La arquitectura por capas y los módulos (presentación, dominio, estilos y utilerías) se describieron en la sección de diseño; aquí se detalla el comportamiento de cada funcionalidad tal como quedó implementada y verificada.
+
+El flujo de uso de la aplicación reproduce el orden lógico del problema: el usuario configura el espacio y los obstáculos, define las zonas de despliegue y la meta, genera la población y, al colocar la meta, el sistema construye automáticamente la red de rutas; al iniciar la simulación, los individuos navegan por dicha red hasta concentrarse en la zona objetivo. Todas las acciones están disponibles mediante clic en la interfaz, con retroalimentación visual inmediata.
+
+\subsection{Configuración del espacio de simulación}
+
+La funcionalidad de espacio permite definir el mundo simulado como una región rectangular de ancho y alto configurables en el rango de 200 a 10\,000 unidades (RF-01). La clase \texttt{Space} mantiene la posición y las dimensiones de la región, así como el límite superior que separa el área de simulación de la interfaz; sobre ella se apoyan las consultas de contención (\texttt{contains}, \texttt{minX}/\texttt{maxX}/\texttt{minY}/\texttt{maxY}) que utilizan tanto la creación de elementos como el movimiento de los individuos.
+
+Al modificar las dimensiones desde el panel \emph{Space}, el espacio se redimensiona y se recentra automáticamente respecto a la vista, y el fondo adopta el color definido por el tema activo. La creación de obstáculos y poblaciones valida siempre que los nuevos elementos queden dentro de los límites del espacio, por lo que no es posible colocar elementos fuera del mundo simulado.
+
+\subsection{Obstáculos: polígonos regulares y convexos}
+
+El sistema soporta dos formas de crear obstáculos (RF-02 y RF-03):
+
+\begin{itemize}
+    \item \textbf{Polígonos regulares.} El usuario indica el número de lados (3--100) y el radio (3--100) y elige la posición: centrada, aleatoria (con reintentos hasta encontrar una ubicación sin solapamiento con obstáculos previos) o personalizada mediante clic.
+    \item \textbf{Polígonos convexos arbitrarios.} El usuario traza la figura colocando cada vértice con un clic. Al completar el número de lados indicado, el sistema valida la convexidad mediante el producto cruz de cada terna de vértices consecutivos (algoritmo descrito en la sección de diseño); si la figura no es convexa se rechaza y la herramienta se reactiva para intentarlo de nuevo.
+\end{itemize}
+
+Ambos tipos se rasterizan de forma \emph{pixel-perfect} sobre la rejilla de colisiones: mediante una prueba punto-en-polígono se marca cada celda ocupada por la figura, de modo que los individuos evitan la forma exacta del obstáculo y no únicamente su rectángulo envolvente. Los obstáculos pueden seleccionarse con clic (la selección también usa punto-en-polígono, no la caja) para eliminarlos individualmente, o borrarse en su totalidad; al eliminarlos, sus celdas se liberan de la rejilla para que el espacio vuelva a ser transitable (RF-04).
+
+\subsection{Zonas de inicio y meta, y creación de poblaciones}
+
+Las zonas de inicio (verde) y de meta (rosa) son círculos de radio configurable (1--200, ajustable también con la rueda del ratón mientras se coloca) que se crean con un clic y pueden seleccionarse, eliminarse o borrarse (RF-07). Al crear una meta se dispara la generación de la red de rutas (siguiente funcionalidad).
+
+La población se crea indicando el número de individuos ($1 \le N \le 5000$) y su radio (1--30) (RF-05). La colocación depende de las zonas de inicio definidas:
+
+\begin{itemize}
+    \item \textbf{Con zonas de inicio:} los individuos se distribuyen entre las zonas de forma proporcional al área de cada una (porcentaje igual a área de la zona dividida entre el área total), modelando escenarios de despliegue realistas.
+    \item \textbf{Sin zonas de inicio:} los individuos se generan dentro del círculo inscrito al centro del espacio.
+\end{itemize}
+
+Cada individuo se coloca en una posición aleatoria dentro de su zona con hasta mil reintentos, validando contra la rejilla de colisiones que no se superponga con obstáculos ni con otros individuos; al colocarse registra su contorno en la rejilla y lo libera al ser eliminado, manteniendo la consistencia de la detección de colisiones (RF-06). El empaquetamiento es realista: en el escenario de validación con zonas de radio 113 y radio de individuo 5 se colocaron 384 de 500 individuos solicitados, al saturarse el espacio libre dentro de las zonas; con radios menores el llenado fue completo.
+
+\subsection{Generación de la red de rutas (algoritmo bioinspirado)}
+
+La red de rutas se construye con el algoritmo de crecimiento por ramificación descrito en la sección de diseño (RF-08). Operativamente, el crecimiento se organiza por niveles: del punto de inicio (centro de cada zona de despliegue) parten 40 ramas iniciales en todas las direcciones; en los niveles siguientes cada rama genera 10 y después 3 descendientes con una perturbación angular acotada ($\pm 45°$) respecto a la dirección del padre, lo que conserva cierta persistencia direccional. Cada rama avanza en pasos unitarios hasta una longitud máxima de segmento: si en el avance alcanza una zona meta, la rama completa se reconstruye hacia atrás (retrazado de padres) y se incorpora a la red como una ruta; si choca con un obstáculo o sale del espacio, la rama muere. El proceso se repite hasta reunir el número de rutas deseado.
+
+La red se calcula una sola vez al definir las metas (no por individuo), de modo que su costo se amortiza entre toda la población, y sus segmentos se dibujan sobre el espacio para su inspección.
+
+Durante la validación del proyecto en Linux se detectaron y corrigieron dos problemas de terminación del algoritmo original, que también afectaban al uso interactivo:
+
+\begin{itemize}
+    \item Cuando todas las ramas de un nivel morían (por ejemplo, con metas inaccesibles), el bucle principal de crecimiento nunca terminaba. Se agregó la terminación cuando un nivel queda sin ramas viables.
+    \item El crecimiento en amplitud (tres descendientes por nodo) hacía que el límite de nodos se alcanzara en niveles poco profundos, impidiendo alcanzar metas lejanas. Se incorporaron límites de exploración (20\,000 nodos y 30 niveles de profundidad) y un control de puntas activas: por nivel se conservan hasta 60 nodos muestreados uniformemente, lo que permite explorar en profundidad —análogo a las puntas de crecimiento del micelio— y garantiza la terminación en cualquier escenario.
+\end{itemize}
+
+Con estas correcciones, el escenario de validación (dos zonas de despliegue y una meta a más de 500 unidades de distancia, con un obstáculo central) genera la red completa —alrededor de 12 rutas, entre 96 y 99 segmentos— en aproximadamente un segundo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/bench_2000_0_escenario.png}
+    \caption{Escenario de validación generado por el modo \texttt{--autotest}: zonas de inicio (verde), zona meta (rosa), obstáculo hexagonal central y red de rutas bioinspirada (líneas claras) que conecta ambas zonas con la meta.}
+    \label{fig:red}
+\end{figure}
+
+\subsection{Simulación del movimiento de la población}
+
+El bucle principal de la aplicación actualiza la simulación con un paso de tiempo fijo y renderiza cada fotograma (RF-09). Por cada individuo y fotograma se aplica la siguiente lógica (RF-10):
+
+\begin{enumerate}
+    \item Si el individuo se encuentra dentro de una zona meta, se desplaza hacia un punto aleatorio dentro de la misma (comportamiento de permanencia/deambulado).
+    \item En caso contrario, si la red de rutas existe, el individuo se asigna al segmento más cercano mediante proyección punto--segmento (la primera vez o al liberar un segmento) y se dirige al punto más próximo de dicho segmento; al alcanzar su extremo, se libera la asignación y en el siguiente fotograma se elige nuevamente el segmento más cercano.
+    \item Si no existe red, el individuo realiza un paseo aleatorio y cambia de dirección al colisionar o con probabilidad baja.
+\end{enumerate}
+
+El desplazamiento se resuelve contra la rejilla de colisiones compartida (obstáculos e individuos): se intenta el movimiento completo y, si la posición resultante está ocupada o sale del espacio, se reintenta con magnitud decreciente (factores de 1.0 a 0.15, hasta 18 intentos). Esto produce un deslizamiento natural a lo largo de los obstáculos y evita la interpenetración entre individuos sin necesidad de resolver empujes. Al llegar a una meta, los individuos permanecen dentro de ella deambulando.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/bench_2000_1_simulacion.png}
+    \caption{Simulación en curso con 2000 individuos: la población abandona las zonas de inicio y se incorpora a la red de rutas dirigiéndose hacia la meta.}
+    \label{fig:simulacion}
+\end{figure}
+
+\subsection{Interfaz gráfica, temas y control de vista}
+
+La interfaz se construyó desde cero sobre SFML, sin motores de juego ni bibliotecas de widgets de terceros. Incluye un kit propio de componentes (\texttt{Button}, \texttt{NumericInput} con botones de incremento/decremento y entrada por teclado, \texttt{DropList}, \texttt{WidgetPanel} y \texttt{TitleBar}) dibujados como figuras vectoriales, una ventana sin bordes con barra de título personalizada (minimizar, maximizar/restaurar, cerrar y arrastre) y tipografía integrada de estilo clásico. El menú superior organiza la configuración en paneles por categoría (\emph{Space}, \emph{Obstacles}, \emph{Population}, \emph{Targets}, \emph{Simulation}, \emph{Appearance}) que se muestran u ocultan según la herramienta activa, y los botones se habilitan o deshabilitan según el contexto (por ejemplo, no se permite crear una segunda población sin borrar la existente).
+
+La interacción ofrece retroalimentación visual inmediata: vista previa translúcida (``fantasma'') de la entidad que se va a crear, cambio de cursor según la herramienta (mano, cruz o flecha) y resaltado en rojo de los elementos seleccionados (RF-12). El control de vista permite acercar y alejar con la rueda del ratón o con botones, restablecer el zoom, centrar la vista y arrastrar el encuadre; cuando una herramienta de creación está activa, la rueda ajusta el radio del elemento en lugar del zoom (RF-11).
+
+La apariencia es totalmente configurable en tiempo de ejecución: los temas (\emph{Classic}, \emph{Coral}, \emph{DarkSlate} y \emph{Mint}) se definen en archivos JSON externos que se cargan al arrancar y se aplican al instante a todos los componentes, el espacio, las zonas, la población y los obstáculos, sin recompilar (NFR-06). Cabe señalar un detalle de portabilidad: SFML no expone una API portable para minimizar la ventana, por lo que el botón de minimizar utiliza la API de Windows únicamente en esa plataforma (código aislado bajo \texttt{\#ifdef \_WIN32}) y queda inerte en Linux y macOS, donde la ventana se controla con el gestor de ventanas del sistema.
+
+\subsection{Reproducción de la implementación y verificación de rendimiento}
+
+La aplicación se compila con CMake y requiere C++17 y SFML 2.6 (componentes \emph{graphics}, \emph{window} y \emph{system}):
+
+\begin{verbatim}
+mkdir build && cd build
+cmake ..                # o: cmake .. -DCMAKE_PREFIX_PATH=<ruta a SFML>
+cmake --build .
+./VibeSim
+\end{verbatim}
+
+El código fuente es portable entre Windows, macOS y Linux; las únicas llamadas específicas de Windows están aisladas bajo directivas de preprocesador. Durante el servicio social se validó en Windows y macOS, y en la etapa final se compiló y verificó en Linux (Rocky Linux 9, GCC 11.5, SFML 2.6.2), donde se ejecutaron las pruebas de rendimiento que se reportan a continuación.
+
+Para que los escenarios sean reproducibles, el ejecutable incorpora un modo de pruebas automatizadas (\texttt{--autotest}) que construye un escenario determinista (espacio, obstáculos, zonas de inicio y meta, red de rutas y población), reporta por segundo los fotogramas por segundo y, al terminar, guarda capturas de pantalla del escenario, de la simulación en curso y del estado final:
+
+\begin{verbatim}
+./VibeSim --autotest --n 2000 --seconds 10 --out ../evidencias/bench_2000
+\end{verbatim}
+
+Las pruebas se ejecutaron con poblaciones de 500, 2000 y 4000 individuos solicitados, en el escenario de la figura~\ref{fig:red} (espacio de 1100$\times$750 unidades, dos zonas de inicio, un obstáculo y una meta). La tabla~\ref{tab:rendimiento} resume los resultados; el tiempo de actualización corresponde únicamente a la lógica de simulación (movimiento y colisiones) y es independiente de la tarjeta gráfica.
+
+\begin{table}[H]
+    \centering
+    \caption{Resultados de la verificación de rendimiento en Linux (Rocky Linux 9, GCC 11.5, SFML 2.6.2, NVIDIA RTX 3060; renderizado sin límite de fotogramas).}
+    \label{tab:rendimiento}
+    \begin{tabular}{p{6cm} c c c}
+        \toprule
+        \textbf{Métrica} & \textbf{500} & \textbf{2000} & \textbf{4000} \\
+        \midrule
+        Individuos colocados & 384 & 2000 & 4000 \\
+        Radio del individuo (unidades) & 5 & 3 & 2 \\
+        FPS promedio & 278.2 & 73.2 & 42.7 \\
+        FPS mínimo & 227.9 & 68.2 & 39.9 \\
+        Actualización (ms por fotograma) & 2.85 & 12.26 & 21.37 \\
+        Renderizado (ms por fotograma) & 0.003 & 0.018 & 1.04 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El costo de actualización crece de forma aproximadamente lineal con la población (≈5.3\,$\mu$s por individuo por fotograma); con 4000 individuos la simulación se mantuvo por encima de 39 FPS en todo momento, cumpliendo el requisito de tiempo real (NFR-01) aun considerando que la lógica de simulación es independiente de la GPU. Los registros completos y las capturas de estas corridas se conservan en el repositorio, en la carpeta \texttt{evidencias/}, y su interpretación se presenta en la sección de resultados.
+
+% ============================================================
+% 8. RESULTADOS
+% ============================================================
+
+\section{Resultados}
+
+En esta sección se resumen e interpretan los resultados de la implementación. Los detalles operativos, el entorno de validación y el método de medición (reproducible mediante el modo \texttt{--autotest}) se describen en la sección de Implementación; aquí se presentan los resultados funcionales, de rendimiento y el grado de cumplimiento de los objetivos planteados.
+
+\subsection{Resultados funcionales}
+
+Se obtuvo una prueba de concepto funcional de punta a punta: es posible configurar un escenario completo (espacio, obstáculos regulares y convexos, zonas de despliegue y meta, población), generar la red de rutas y simular la navegación de la población hacia la meta, todo desde la interfaz gráfica y sin intervención manual sobre el código. El flujo verifica de forma integral los requerimientos funcionales RF-01 a RF-12 descritos en la sección de Desarrollo.
+
+La generación de la red de rutas opera de forma confiable y rápida: en el escenario de validación (dos zonas de despliegue, un obstáculo central y una meta a más de 500 unidades de distancia) la red se genera en aproximadamente un segundo, con entre 96 y 99 segmentos que conforman alrededor de 12 rutas entre los orígenes y la meta (figura~\ref{fig:red}). Durante la validación se corrigieron los problemas de terminación del algoritmo descritos en la sección de Implementación, con lo que la generación concluye siempre, incluso en escenarios donde la meta resulta inaccesible.
+
+La colocación de poblaciones se comporta como un empaquetamiento realista: se colocaron por completo las poblaciones de 2000 y 4000 individuos solicitadas (con radios de 3 y 2 unidades, respectivamente); en la prueba de 500 individuos con radio 5 las zonas de despliegue se saturaron en 384 individuos, deteniéndose la colocación al no encontrar posiciones libres, lo que evidencia que el sistema respeta la ocupación del espacio y no superpone entidades.
+
+La simulación mantiene a los individuos navegando por la red, deslizándose ante obstáculos y entre sí, y concentrándose en la zona meta (figura~\ref{fig:simulacion}); la interfaz, los temas y el control de vista funcionan en tiempo de ejecución, y la aplicación compila y se ejecuta en Windows, macOS y Linux.
+
+\subsection{Resultados de rendimiento}
+
+La tabla~\ref{tab:rendimiento} de la sección de Implementación resume las mediciones. Los resultados más relevantes son:
+
+\begin{itemize}
+    \item El costo de actualización de la simulación (movimiento y colisiones) crece de forma aproximadamente lineal con la población: ≈5.3\,$\mu$s por individuo por fotograma, es decir, 21.37\,ms por fotograma con 4000 individuos. Este costo corresponde únicamente a la lógica de simulación y es independiente de la tarjeta gráfica.
+    \item El renderizado es marginal frente a la lógica (a lo sumo 1.04\,ms por fotograma con 4000 individuos), lo que confirma que la rejilla de colisiones y el kit de interfaz propio no constituyen un cuello de botella.
+    \item Con 4000 individuos la simulación se mantuvo por encima de 39 FPS en todo momento en el entorno de validación, cumpliendo el requisito de tiempo real (NFR-01).
+\end{itemize}
+
+Dado que la lógica de simulación es independiente de la GPU, el límite práctico en laptops convencionales lo establece la CPU: 4000 individuos requieren aproximadamente 21\,ms de cómputo por fotograma (≈45 FPS lógicos máximos), y 2000 individuos ≈12\,ms (≈80 FPS lógicos), lo que sitúa al simulador dentro del rango de tiempo real en equipos de uso general. Las mediciones son reproducibles con el modo \texttt{--autotest}; los registros completos y las capturas se conservan en el repositorio.
+
+\subsection{Cumplimiento de objetivos}
+
+El objetivo general —desarrollar un simulador 2D de propósito general con generación de redes de rutas inspiradas en el crecimiento miceliar y navegación de poblaciones en entornos configurables— se cumplió en su totalidad. La tabla~\ref{tab:objetivos} resume el cumplimiento de los objetivos específicos.
+
+\begin{table}[H]
+    \centering
+    \caption{Cumplimiento de los objetivos específicos.}
+    \label{tab:objetivos}
+    \begin{tabular}{p{7.5cm} p{2cm} p{5cm}}
+        \toprule
+        \textbf{Objetivo específico} & \textbf{Estado} & \textbf{Evidencia / indicador} \\
+        \midrule
+        Generación dinámica de redes de caminos mediante crecimiento por ramificación & Cumplido & Red de 96--99 segmentos generada en $\approx$1\,s; terminación garantizada en todo escenario \\
+        Configuración interactiva del entorno (espacio, obstáculos, zonas y población) & Cumplido & RF-01 a RF-07 operativos desde la interfaz \\
+        Movimiento de agentes sobre la red con manejo eficiente de colisiones & Cumplido & $\approx$5.3\,$\mu$s por individuo por fotograma; 4000 individuos $>$39 FPS \\
+        Prototipo funcional, documentado y presentado ante el laboratorio & Cumplido & Repositorio con \texttt{README}, modo \texttt{--autotest} y evidencias; presentación al Dr. Genaro Juárez Martínez \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+El proyecto fue presentado ante el Dr. Genaro Juárez Martínez, integrante de ALIROB, y queda disponible en el repositorio como base reutilizable para futuros experimentos de comportamiento colectivo, autoorganización y robótica de enjambres. Los resultados cuantitativos corresponden al entorno de validación descrito en la sección de Implementación; al tratarse de una prueba de concepto, no se realizaron estudios formales de usabilidad ni comparaciones contra otros simuladores, lo que se plantea como trabajo futuro.
+
+% ============================================================
+% 9. CONCLUSIONES
+% ============================================================
+
+\section{Conclusiones}
+
+Analice el resultado final del proyecto.
+
+Indique:
+
+\begin{itemize}
+    \item Si se cumplió el objetivo general.
+    \item Qué objetivos específicos fueron alcanzados.
+    \item Cuáles fueron las principales aportaciones del proyecto.
+    \item Qué conocimientos técnicos se adquirieron o fortalecieron.
+    \item Qué impacto tuvo la solución dentro de la organización.
+\end{itemize}
+
+Las conclusiones deben centrarse en los resultados obtenidos y no únicamente
+en describir nuevamente las actividades realizadas.
+
+% ============================================================
+% 11. TRABAJO FUTURO
+% ============================================================
+
+\section{Trabajo futuro}
+
+Describa las mejoras o extensiones que podrían realizarse posteriormente.
+
+Por ejemplo:
+
+\begin{itemize}
+    \item Nuevas funcionalidades.
+    \item Mejoras de rendimiento.
+    \item Mejoras de seguridad.
+    \item Automatización de procesos.
+    \item Integración con otros sistemas.
+    \item Nuevos modelos o algoritmos.
+    \item Escalabilidad de la solución.
+\end{itemize}
+
+% -------------------------------------------------
+% Bibliografía
+% -------------------------------------------------
+\begin{thebibliography}{99}
+
+\bibitem{gacetaIPN2024}
+Instituto Politécnico Nacional.
+\newblock Estudiantes del IPN desarrollan robot de monitoreo autónomo con bioalgoritmo.
+\newblock \emph{Gaceta Politécnica}, 2024.
+\newblock Disponible en: \url{https://www.ipn.mx/gacetapolitecnica/}.
+
+\bibitem{alirob}
+The Artificial Life Robotics Lab (ALIROB).
+\newblock Escuela Superior de Cómputo, Instituto Politécnico Nacional.
+\newblock Laboratorio de investigación en vida artificial, sistemas complejos y robótica de enjambres.
+
+\bibitem{hernandez2024tesis}
+E.~Hernández Vergara y J.~Á.~Rojas Cruz.
+\newblock Diseño de un sistema autónomo para monitoreo.
+\newblock Trabajo Terminal 2024-B125, Escuela Superior de Cómputo, Instituto Politécnico Nacional, México, 2024.
+\newblock Disponible en: \url{https://www.comunidad.escom.ipn.mx/genaro/Papers/Thesis_files/tesisAngelEduardo.pdf}.
+
+\bibitem{adamatzky2012maze}
+A.~Adamatzky.
+\newblock Slime mould solves maze in one pass \ldots assisted by gradient of chemo-attractants.
+\newblock \emph{IEEE Transactions on NanoBioscience}, 11(2):131--134, 2012.
+\newblock DOI: 10.1109/TNB.2011.2181978.
+
+\bibitem{jones2015morphological}
+J.~Jones.
+\newblock A morphological adaptation approach to path planning inspired by slime mould.
+\newblock \emph{International Journal of General Systems}, 44(3):279--291, 2015.
+
+\bibitem{luo2021swarm}
+Y.~Luo et~al.
+\newblock Swarm robot exploration strategy for path formation tasks inspired by \emph{Physarum polycephalum}.
+\newblock \emph{Complexity}, 2021:6698421, 2021.
+\newblock DOI: 10.1155/2021/6698421.
+
+\bibitem{tian2023slime}
+X.~Tian et~al.
+\newblock Path planning of autonomous mobile robots based on an improved slime mould algorithm.
+\newblock \emph{Drones}, 7(4):257, 2023.
+
+\bibitem{scientificreports2025physarum}
+Autores varios.
+\newblock Bioinspired algorithm based on \emph{Physarum polycephalum} for the formation of decentralized mesh networks in multi-robot systems.
+\newblock \emph{Scientific Reports}, 2025.
+\newblock DOI: 10.1038/s41598-025-33456-y.
+
+\end{thebibliography}
+
+\end{document}
