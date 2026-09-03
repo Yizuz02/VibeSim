@@ -2,7 +2,9 @@
 
 #include <SFML/Graphics.hpp>
 #include <utility>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include "../styles/Theme.hpp"
 #include "Button.hpp"

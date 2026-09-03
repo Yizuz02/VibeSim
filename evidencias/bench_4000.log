@@ -1,0 +1,24 @@
+[autotest] espacio redimensionado a 1100x750
+[autotest] radio individuo=2 radio zonas=128.457
+[autotest] zonas=2 metas=1
+[autotest] red de rutas generada: 98 segmentos
+[autotest] poblacion colocada: 4000/4000
+[autotest] frame=0 elapsed=0.005881s
+[autotest] captura guardada: ../evidencias/bench_4000_0_escenario.png
+[autotest] frame=1 elapsed=0.119648s
+[autotest] frame=2 elapsed=0.019991s
+[autotest] frame=3 elapsed=0.019216s
+[autotest] t=1.0055s fps=44.7539 poblacion=4000 segmentos=98
+[autotest] captura guardada: ../evidencias/bench_4000_1_simulacion.png
+[autotest] t=2.08888s fps=45.2287 poblacion=4000 segmentos=98
+[autotest] t=3.09183s fps=45.8647 poblacion=4000 segmentos=98
+[autotest] t=4.11343s fps=44.0485 poblacion=4000 segmentos=98
+[autotest] t=5.12528s fps=43.4848 poblacion=4000 segmentos=98
+[autotest] t=6.13225s fps=42.7022 poblacion=4000 segmentos=98
+[autotest] t=7.1353s fps=41.8726 poblacion=4000 segmentos=98
+[autotest] t=8.15321s fps=41.2607 poblacion=4000 segmentos=98
+[autotest] t=9.15822s fps=40.796 poblacion=4000 segmentos=98
+[autotest] t=10.162s fps=39.8511 poblacion=4000 segmentos=98
+[autotest] t=11.1636s fps=39.9361 poblacion=4000 segmentos=98
+[autotest] RESULTADO: poblacion=4000 frames=511 fps_prom=42.709 fps_min=39.8511 ms_actualizacion_prom=21.3699 ms_eventos_prom=0.00195695 ms_render_prom=1.04305
+[autotest] captura guardada: ../evidencias/bench_4000_2_final.png

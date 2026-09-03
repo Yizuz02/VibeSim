@@ -1,0 +1,20 @@
+[autotest] espacio redimensionado a 1100x750
+[autotest] radio individuo=5 radio zonas=113.541
+[autotest] zonas=2 metas=1
+[autotest] red de rutas generada: 96 segmentos
+[autotest] poblacion colocada: 384/500
+[autotest] frame=0 elapsed=0.004648s
+[autotest] captura guardada: ../evidencias/bench_500_0_escenario.png
+[autotest] frame=1 elapsed=0.078342s
+[autotest] frame=2 elapsed=0.00257s
+[autotest] frame=3 elapsed=0.002532s
+[autotest] t=1.0033s fps=365.794 poblacion=384 segmentos=96
+[autotest] captura guardada: ../evidencias/bench_500_1_simulacion.png
+[autotest] t=2.07209s fps=328.409 poblacion=384 segmentos=96
+[autotest] t=3.07486s fps=279.227 poblacion=384 segmentos=96
+[autotest] t=4.07678s fps=228.56 poblacion=384 segmentos=96
+[autotest] t=5.07715s fps=227.917 poblacion=384 segmentos=96
+[autotest] t=6.07778s fps=260.833 poblacion=384 segmentos=96
+[autotest] t=7.07817s fps=256.899 poblacion=384 segmentos=96
+[autotest] RESULTADO: poblacion=384 frames=2195 fps_prom=278.234 fps_min=227.917 ms_actualizacion_prom=2.85057 ms_eventos_prom=0.000455581 ms_render_prom=0.00273349
+[autotest] captura guardada: ../evidencias/bench_500_2_final.png

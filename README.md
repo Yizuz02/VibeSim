@@ -27,3 +27,20 @@ This will generate the executable:
 ```
 VibeSim
 ```
+
+## Automated test mode
+
+For performance measurements and reproducible scenarios, the binary accepts an
+`--autotest` mode that builds a deterministic scenario (space, obstacles,
+start/goal zones, bio-inspired route network and population) and reports FPS
+and per-frame timings while saving screenshots:
+
+```
+./VibeSim --autotest --n 2000 --seconds 10 --out evidencias/bench_2000
+```
+
+Options: `--n <individuals>` (population to place), `--seconds <duration>`,
+`--out <file prefix>` (writes `<prefix>_0_escenario.png`,
+`<prefix>_1_simulacion.png`, `<prefix>_2_final.png` and prints per-second FPS
+reports plus a final summary to stdout). Normal interactive use is unaffected
+(only enabled with `--autotest`).

@@ -9,8 +9,13 @@
 #include "components/Components.hpp"
 #include "simulation/Simulation.hpp"
 #include <unordered_map>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #include <math.h>
+#include <cstdlib>
+#include <string>
+#include <exception>
 
 
 struct Point {
@@ -118,6 +123,16 @@ void grow(const Point& startPoint,
                     next.parent = parentIndex;
                     nodes.push_back(next);
                     int newIndex = nodes.size() - 1;
+                    // Salvaguarda: limita la exploracion para evitar bucles
+                    // infinitos cuando la meta es inalcanzable (el arbol
+                    // crece de forma exponencial por nivel).
+                    if (nodes.size() % 5000 == 0)
+                        std::cout << "Grow: explorando... nodos=" << nodes.size() << std::endl;
+                    if (nodes.size() >= 20000) {
+                        std::cout << "Grow: limite de exploracion alcanzado ("
+                                  << nodes.size() << " nodos)" << std::endl;
+                        return;
+                    }
                     nextLevel.push_back(newIndex);
                     if (addSeg){
                         int idx = newIndex;
@@ -140,6 +155,29 @@ void grow(const Point& startPoint,
             }
         }
         level+=1;
+        if (level > 30) {
+            std::cout << "Grow: profundidad maxima alcanzada (" << level
+                      << " niveles)" << std::endl;
+            return;
+        }
+        if (nextLevel.empty()) {
+            std::cout << "Grow: sin ramas viables en el nivel " << level
+                      << std::endl;
+            return;
+        }
+        // Limita el numero de puntas activas por nivel: sin este control el
+        // arbol crece en amplitud de forma exponencial y el tope de nodos
+        // corta la exploracion en profundidad (metas lejanas inalcanzables).
+        // Se conservan hasta 60 puntas muestreadas uniformemente, lo que
+        // permite explorar en profundidad como un micelio real.
+        if (nextLevel.size() > 60) {
+            std::vector<int> sampled;
+            sampled.reserve(60);
+            for (int k = 0; k < 60; ++k)
+                sampled.push_back(
+                    nextLevel[(static_cast<size_t>(k) * nextLevel.size()) / 60]);
+            nextLevel = std::move(sampled);
+        }
         numChildren = std::max(numChildren/4, N);
         levels[level]=nextLevel;
     }
@@ -183,7 +221,25 @@ float distancePointToSegment(
 }
 
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    // ------------------------------------------------------------------
+    // Modo AUTOTEST (instrumentacion para pruebas de rendimiento).
+    // Uso: ./VibeSim --autotest [--n <individuos>] [--seconds <duracion>]
+    //                 [--out <prefijo_de_archivos>]
+    // Se activa unicamente con --autotest; el uso normal no se afecta.
+    // ------------------------------------------------------------------
+    bool autotest = false;
+    int autoN = 2000;
+    float autoSeconds = 15.f;
+    std::string autoPrefix = "autotest";
+    for (int a = 1; a < argc; ++a) {
+        std::string arg = argv[a];
+        if (arg == "--autotest") autotest = true;
+        else if (arg == "--n" && a + 1 < argc) autoN = std::max(1, std::atoi(argv[++a]));
+        else if (arg == "--seconds" && a + 1 < argc) autoSeconds = std::max(1.f, static_cast<float>(std::atof(argv[++a])));
+        else if (arg == "--out" && a + 1 < argc) autoPrefix = argv[++a];
+    }
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -387,6 +443,110 @@ int main() {
 
     std::vector<std::pair<Point, Point>> segments;
 
+    // ------------------------------------------------------------------
+    // Instrumentacion del modo AUTOTEST (solo afecta con --autotest).
+    // ------------------------------------------------------------------
+    sf::Clock moveClock;
+    sf::Clock autoClock;
+    sf::Clock evClock;
+    sf::Clock rdClock;
+    double autoEvMs = 0.0;
+    double autoRdMs = 0.0;
+    float autoWindowTime = 0.f;
+    float autoReportTime = 0.f;
+    unsigned long long autoReportFrames = 0;
+    unsigned long long autoTotalFrames = 0;
+    double autoMoveMs = 0.0;
+    double autoFpsSum = 0.0;
+    int autoFpsSamples = 0;
+    double autoMinFps = 1e9;
+    int autoPhase = 0;      // 0: captura inicial -> 1: simular -> 2: terminar
+    bool autoMidShot = false;
+    long autoPlaced = 0;
+
+    auto captureFrame = [&](const std::string& path) {
+        sf::Texture tex;
+        if (tex.create(window.getSize().x, window.getSize().y)) {
+            tex.update(window);
+            tex.copyToImage().saveToFile(path);
+            std::cout << "[autotest] captura guardada: " << path << std::endl;
+        } else {
+            std::cout << "[autotest] ERROR: no se pudo capturar " << path << std::endl;
+        }
+    };
+
+    if (autotest) {
+        try {
+            window.setPosition(sf::Vector2i(40, 40));
+            space.setSize({1100, 750});
+            std::cout << "[autotest] espacio redimensionado a 1100x750" << std::endl;
+
+            // Obstaculo central: obliga a desviar la red sin bloquearla.
+            obstacles.addRegularPolygon({space.minX() + 350.f, space.minY() + 305.f}, 80.f, 6);
+
+            // Radio del individuo segun el tamano de poblacion solicitado.
+            float indRadius = autoN <= 700 ? 5.f : (autoN <= 2200 ? 3.f : 2.f);
+            population.setRadius(indRadius);
+            float cell = (1.8f * indRadius) * (1.8f * indRadius) * 2.0f;
+            float needArea = autoN * cell;
+            float zoneR = std::max(60.f, std::min(150.f,
+                std::sqrt(needArea / (2.f * 3.14159265f))));
+            std::cout << "[autotest] radio individuo=" << indRadius
+                      << " radio zonas=" << zoneR << std::endl;
+
+            // Zonas de despliegue (inicio) apiladas a la izquierda y meta a la derecha.
+            starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 240.f - zoneR}, zoneR);
+            starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 540.f - zoneR}, zoneR);
+            goals.addTarget({space.minX() + 600.f, space.minY() + 235.f}, 150.f);
+            std::cout << "[autotest] zonas=" << starts.getTargets().size()
+                      << " metas=" << goals.getTargets().size() << std::endl;
+
+            // Generacion de la red de rutas (mismo flujo que la interfaz).
+            segments.clear();
+            for (auto& tempStart : starts.getTargets()) {
+                auto* circle = dynamic_cast<sf::CircleShape*>(tempStart.shape.get());
+                float radius = circle->getRadius();
+                float centerX = circle->getPosition().x + radius;
+                float centerY = circle->getPosition().y + radius;
+                Point startPoint{centerX, centerY};
+                grow(startPoint, 3, 60, 6, segments, space, goals,
+                     static_cast<int>(population.getRadius()));
+            }
+            std::cout << "[autotest] red de rutas generada: "
+                      << segments.size() << " segmentos" << std::endl;
+
+            // Colocacion de la poblacion dentro de las zonas de inicio.
+            for (int i = 0; i < autoN; ++i) {
+                const auto& zone = starts.getTargets()[i % starts.getTargets().size()];
+                float r = zone.shape->getRadius();
+                sf::Vector2f pos = zone.shape->getPosition();
+                try {
+                    Individual& ind = population.createIndividual(
+                        {static_cast<int>(pos.x + r), static_cast<int>(pos.y + r)},
+                        static_cast<int>(r));
+                    int directionx = 0;
+                    int directiony = 0;
+                    do {
+                        directionx = dist(gen);
+                        directiony = dist(gen);
+                    } while (directionx == 0 && directiony == 0);
+                    directions[ind.getId()] = {directionx, directiony};
+                    autoPlaced++;
+                } catch (const std::exception&) {
+                    break; // zona saturada: se detiene la colocacion
+                }
+            }
+            std::cout << "[autotest] poblacion colocada: " << autoPlaced
+                      << "/" << autoN << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << "[autotest] ERROR en el escenario: " << e.what() << std::endl;
+            window.close();
+        }
+    }
+
+    // Descarta el tiempo de preparacion del escenario de la medicion de FPS.
+    if (autotest) autoClock.restart();
+
     while (window.isOpen()) {
 
         sf::Event event;
@@ -398,6 +558,7 @@ int main() {
         // ---------------------------------
         //        MANEJO DE EVENTOS
         // ---------------------------------
+        evClock.restart();
         while (window.pollEvent(event)) {
 
             if (event.type == sf::Event::Closed)
@@ -1014,7 +1175,9 @@ int main() {
         // ---------------------------------
         //       MOVIMIENTO CONTINUO
         // ---------------------------------
+        if (autotest) autoEvMs += evClock.getElapsedTime().asMilliseconds();
         if (start && !pause) {
+            moveClock.restart();
             for (auto& [id, ind] : population.getIndividuals()) {
                 sf::Vector2f topLeft1 = ind->getShape().getPosition();  
                 float r1 = ind->getShape().getRadius();
@@ -1103,7 +1266,8 @@ int main() {
                             }
                         }
                         currentSegmentIndex[id] = segIdx;  // inicializar
-                        std::cout <<"Id: "<< id << " Seg: " << currentSegmentIndex[id] << std::endl;
+                        if (!autotest)
+                            std::cout <<"Id: "<< id << " Seg: " << currentSegmentIndex[id] << std::endl;
                     }
                     else {
                         segIdx = currentSegmentIndex[id];  // ya estaba inicializado
@@ -1241,8 +1405,9 @@ int main() {
                 }
 
             }
+            if (autotest) autoMoveMs += moveClock.getElapsedTime().asMilliseconds();
         }
-     
+    
         if (window.hasFocus()) {  // evita movimiento si la ventana no está activa
             if (isDragging){
                 sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
@@ -1263,6 +1428,7 @@ int main() {
         // ---------------------------------
         //              RENDER
         // ---------------------------------
+        rdClock.restart();
         window.clear(theme.getBackgroundColor());   
         window.setView(simView); 
         space.draw(); 
@@ -1348,6 +1514,59 @@ int main() {
         targetsPanel.draw(window);
         titleBar.draw(window);
         window.display();
+        if (autotest) autoRdMs += rdClock.getElapsedTime().asMilliseconds();
+
+        // ---- Instrumentacion del modo autotest (reporte y capturas) ----
+        if (autotest) {
+            float elapsed = autoClock.restart().asSeconds();
+            if (autoTotalFrames <= 3)
+                std::cout << "[autotest] frame=" << autoTotalFrames
+                          << " elapsed=" << elapsed << "s" << std::endl;
+            autoWindowTime += elapsed;
+            autoReportTime += elapsed;
+            autoReportFrames++;
+            autoTotalFrames++;
+
+            if (autoPhase == 0) {
+                // Primer fotograma: escenario completo, aun sin movimiento.
+                captureFrame(autoPrefix + "_0_escenario.png");
+                start = true; // arranca la simulacion
+                autoPhase = 1;
+            }
+
+            if (autoPhase == 1 && autoWindowTime >= 2.0f && !autoMidShot) {
+                captureFrame(autoPrefix + "_1_simulacion.png");
+                autoMidShot = true;
+            }
+
+            if (autoReportTime >= 1.0f) {
+                double fps = autoReportFrames / autoReportTime;
+                autoFpsSum += fps;
+                autoFpsSamples++;
+                autoMinFps = std::min(autoMinFps, fps);
+                std::cout << "[autotest] t=" << autoWindowTime
+                          << "s fps=" << fps
+                          << " poblacion=" << population.size()
+                          << " segmentos=" << segments.size() << std::endl;
+                autoReportTime = 0.f;
+                autoReportFrames = 0;
+            }
+
+            if (autoWindowTime >= autoSeconds) {
+                double avgFps = autoFpsSamples ? autoFpsSum / autoFpsSamples : 0.0;
+                double avgMoveMs = autoTotalFrames ? autoMoveMs / autoTotalFrames : 0.0;
+                std::cout << "[autotest] RESULTADO: poblacion=" << population.size()
+                          << " frames=" << autoTotalFrames
+                          << " fps_prom=" << avgFps
+                          << " fps_min=" << (autoFpsSamples ? autoMinFps : 0.0)
+                          << " ms_actualizacion_prom=" << avgMoveMs
+                          << " ms_eventos_prom=" << (autoTotalFrames ? autoEvMs / autoTotalFrames : 0.0)
+                          << " ms_render_prom=" << (autoTotalFrames ? autoRdMs / autoTotalFrames : 0.0)
+                          << std::endl;
+                captureFrame(autoPrefix + "_2_final.png");
+                window.close();
+            }
+        }
     }
 
     return 0;

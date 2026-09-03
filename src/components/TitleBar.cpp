@@ -66,7 +66,14 @@ void TitleBar::setupTitleBarBody() {
 }
 
 void TitleBar::minimize(sf::Window& window) {
+#ifdef _WIN32
     ShowWindow((HWND)window.getSystemHandle(), SW_MINIMIZE);
+#else
+    // SFML no expone una API portable de minimizacion: en Linux/macOS el
+    // boton queda sin efecto (la ventana se controla con el gestor de
+    // ventanas del sistema).
+    (void)window;
+#endif
 }
 
 void TitleBar::resize(sf::Window& window) {
