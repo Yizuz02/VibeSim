@@ -40,6 +40,8 @@ and per-frame timings while saving screenshots:
 ```
 
 Options: `--n <individuals>` (population to place), `--seconds <duration>`,
+`--speed <factor>` (dt multiplier to accelerate the simulation, useful to
+observe the population reaching the goal in a few seconds),
 `--out <file prefix>` (writes `<prefix>_0_escenario.png`,
 `<prefix>_1_simulacion.png`, `<prefix>_2_final.png` and prints per-second FPS
 reports plus a final summary to stdout). Normal interactive use is unaffected

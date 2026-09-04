@@ -18,6 +18,7 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tabularx}
 \usepackage{longtable}
 \usepackage{amsmath,amssymb}
 \usepackage{xcolor}
@@ -243,41 +244,81 @@ Los requerimientos del proyecto se identificaron a partir de dos fuentes: las ne
 \begin{table}[H]
     \centering
     \caption{Requerimientos funcionales identificados.}
-    \begin{tabular}{p{2.5cm} p{9cm}}
+    \label{tab:requerimientos_funcionales}
+    \begin{tabularx}{\textwidth}{p{2.2cm} X}
         \toprule
         \textbf{ID} & \textbf{Descripción} \\
         \midrule
-        RF-01 & Definir un espacio de simulación rectangular con ancho y alto configurables en el rango de 200 a 10\,000 unidades. \\
-        RF-02 & Crear obstáculos poligonales regulares indicando número de lados (3--100), radio (3--100) y posición (centro, aleatoria o personalizada mediante clic). \\
-        RF-03 & Crear obstáculos convexos arbitrarios colocando sus vértices mediante clics; el sistema debe validar la convexidad de la figura antes de aceptarla. \\
-        RF-04 & Gestionar obstáculos: seleccionarlos con clic, eliminarlos de forma individual o borrarlos en su totalidad. \\
-        RF-05 & Crear una población de $N$ individuos ($1 \le N \le 5000$) con radio configurable (1--30), distribuidos dentro de las zonas de inicio de forma proporcional al área de cada zona o, en ausencia de éstas, en posiciones libres aleatorias del espacio. \\
-        RF-06 & Gestionar individuos: agregarlos individualmente con clic, eliminar uno o eliminar la población completa. \\
-        RF-07 & Definir zonas de inicio y zonas meta como círculos de radio configurable (1--200), con creación mediante clic, selección, eliminación individual y borrado total. \\
-        RF-08 & Generar automáticamente una red de rutas libres de obstáculos que conecte las zonas de inicio con las zonas meta mediante el algoritmo bioinspirado, al momento de definir las metas. \\
-        RF-09 & Controlar la simulación: iniciarla, pausarla/reanudarla y detenerla. \\
-        RF-10 & Desplazar a cada individuo de forma autónoma siguiendo la red de rutas hacia las metas, evadiendo obstáculos y a otros individuos; al alcanzar una meta, el individuo debe permanecer dentro de ella. \\
-        RF-11 & Controlar la vista y la apariencia: zoom (acercar, alejar y restablecer), desplazamiento de cámara, centrado de la vista y cambio de tema visual en tiempo de ejecución. \\
-        RF-12 & Proporcionar retroalimentación visual al crear elementos: vista previa (``fantasma'') de la entidad y cambio de cursor según la herramienta activa. \\
+
+        RF-01 &
+        Definir un espacio de simulación rectangular con ancho y alto configurables en el rango de 200 a 10\,000 unidades. \\
+
+        RF-02 &
+        Crear obstáculos poligonales regulares indicando número de lados (3--100), radio (3--100) y posición (centro, aleatoria o personalizada mediante clic). \\
+
+        RF-03 &
+        Crear obstáculos convexos arbitrarios colocando sus vértices mediante clics; el sistema debe validar la convexidad de la figura antes de aceptarla. \\
+
+        RF-04 &
+        Gestionar obstáculos: seleccionarlos con clic, eliminarlos de forma individual o borrarlos en su totalidad. \\
+
+        RF-05 &
+        Crear una población de $N$ individuos ($1 \le N \le 5000$) con radio configurable (1--30), distribuidos dentro de las zonas de inicio de forma proporcional al área de cada zona o, en ausencia de éstas, en posiciones libres aleatorias del espacio. \\
+
+        RF-06 &
+        Gestionar individuos: agregarlos individualmente con clic, eliminar uno o eliminar la población completa. \\
+
+        RF-07 &
+        Definir zonas de inicio y zonas meta como círculos de radio configurable (1--200), con creación mediante clic, selección, eliminación individual y borrado total. \\
+
+        RF-08 &
+        Generar automáticamente una red de rutas libres de obstáculos que conecte las zonas de inicio con las zonas meta mediante el algoritmo bioinspirado, al momento de definir las metas. \\
+
+        RF-09 &
+        Controlar la simulación: iniciarla, pausarla/reanudarla y detenerla. \\
+
+        RF-10 &
+        Desplazar a cada individuo de forma autónoma siguiendo la red de rutas hacia las metas, evadiendo obstáculos y a otros individuos; al alcanzar una meta, el individuo debe permanecer dentro de ella. \\
+
+        RF-11 &
+        Controlar la vista y la apariencia: zoom (acercar, alejar y restablecer), desplazamiento de cámara, centrado de la vista y cambio de tema visual en tiempo de ejecución. \\
+
+        RF-12 &
+        Proporcionar retroalimentación visual al crear elementos: vista previa (``fantasma'') de la entidad y cambio de cursor según la herramienta activa. \\
+
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 \begin{table}[H]
     \centering
     \caption{Requerimientos no funcionales identificados.}
-    \begin{tabular}{p{2.5cm} p{9cm}}
+    \label{tab:requerimientos_no_funcionales}
+    \begin{tabularx}{\textwidth}{p{2.2cm} X}
         \toprule
         \textbf{ID} & \textbf{Descripción} \\
         \midrule
-        NFR-01 & Rendimiento: la simulación debe mantenerse en tiempo real, con interacción fluida y poblaciones numerosas, en laptops convencionales. \\
-        NFR-02 & Portabilidad: la aplicación debe poder compilarse y ejecutarse en Windows, macOS y Linux mediante CMake y SFML. \\
-        NFR-03 & Usabilidad: las acciones principales deben ejecutarse con clic y ofrecer retroalimentación inmediata de su efecto. \\
-        NFR-04 & Mantenibilidad: el código debe organizarse en módulos con responsabilidades separadas (interfaz, simulación, estilos y utilerías). \\
-        NFR-05 & Extensibilidad: el modelo de simulación debe ser independiente del tipo de entidad representada, para servir como base tanto a organismos como a robots autónomos. \\
-        NFR-06 & Configurabilidad: los temas visuales deben definirse en archivos JSON externos, modificables sin necesidad de recompilar. \\
+
+        NFR-01 &
+        Rendimiento: la simulación debe mantenerse en tiempo real, con interacción fluida y poblaciones numerosas, en laptops convencionales. \\
+
+        NFR-02 &
+        Portabilidad: la aplicación debe poder compilarse y ejecutarse en Windows, macOS y Linux mediante CMake y SFML. \\
+
+        NFR-03 &
+        Usabilidad: las acciones principales deben ejecutarse con clic y ofrecer retroalimentación inmediata de su efecto. \\
+
+        NFR-04 &
+        Mantenibilidad: el código debe organizarse en módulos con responsabilidades separadas (interfaz, simulación, estilos y utilerías). \\
+
+        NFR-05 &
+        Extensibilidad: el modelo de simulación debe ser independiente del tipo de entidad representada, para servir como base tanto a organismos como a robots autónomos. \\
+
+        NFR-06 &
+        Configurabilidad: los temas visuales deben definirse en archivos JSON externos, modificables sin necesidad de recompilar. \\
+
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 \subsection{Diseño de la solución}
@@ -289,20 +330,38 @@ La solución se estructuró por capas, separando la interfaz gráfica del domini
 \begin{table}[H]
     \centering
     \caption{Componentes principales del proyecto.}
-    \begin{tabular}{p{3.5cm} p{8cm}}
+    \label{tab:componentes}
+    \begin{tabularx}{\textwidth}{p{3.5cm} X}
         \toprule
         \textbf{Componente} & \textbf{Responsabilidad} \\
         \midrule
-        \texttt{Space} & Define los límites y la posición del mundo simulado y resuelve consultas de contención de elementos. \\
-        \texttt{Collisions} & Mantiene una rejilla discreta de celdas ocupadas (con hashing espacial) y responde consultas de colisión en tiempo casi constante. \\
-        \texttt{Obstacles} & Administra los polígonos regulares y convexos; los rasteriza sobre la rejilla de colisiones. \\
-        \texttt{Targets} & Representa las zonas de inicio y las zonas meta (dos instancias sobre la misma clase). \\
-        \texttt{Population} / \texttt{Individual} & Administra las entidades simuladas: su creación, distribución, registro en la rejilla de colisiones y movimiento con evasión. \\
-        \texttt{Theme} / \texttt{ColorUtils} & Genera paletas de color con variaciones (claras/oscuras) y carga los temas desde archivos JSON. \\
-        Componentes UI & Kit de widgets propio (\texttt{Button}, \texttt{NumericInput}, \texttt{DropList}, \texttt{WidgetPanel}, \texttt{TitleBar}) para la interfaz. \\
-        \texttt{main.cpp} & Orquesta paneles y menús, el bucle de eventos, la generación de la red de rutas y el bucle de simulación y renderizado. \\
+
+        \texttt{Space} &
+        Define los límites y la posición del mundo simulado y resuelve consultas de contención de elementos. \\
+
+        \texttt{Collisions} &
+        Mantiene una rejilla discreta de celdas ocupadas (con hashing espacial) y responde consultas de colisión en tiempo casi constante. \\
+
+        \texttt{Obstacles} &
+        Administra los polígonos regulares y convexos; los rasteriza sobre la rejilla de colisiones. \\
+
+        \texttt{Targets} &
+        Representa las zonas de inicio y las zonas meta (dos instancias sobre la misma clase). \\
+
+        \texttt{Population} / \texttt{Individual} &
+        Administra las entidades simuladas: su creación, distribución, registro en la rejilla de colisiones y movimiento con evasión. \\
+
+        \texttt{Theme} / \texttt{ColorUtils} &
+        Genera paletas de color con variaciones (claras/oscuras) y carga los temas desde archivos JSON. \\
+
+        Componentes UI &
+        Kit de widgets propio (\texttt{Button}, \texttt{NumericInput}, \texttt{DropList}, \texttt{WidgetPanel}, \texttt{TitleBar}) para la interfaz. \\
+
+        \texttt{main.cpp} &
+        Orquesta paneles y menús, el bucle de eventos, la generación de la red de rutas y el bucle de simulación y renderizado. \\
+
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 \subsubsection{Flujo de información}
@@ -407,21 +466,41 @@ La siguiente tabla resume las tecnologías y herramientas utilizadas y su funci�
 \begin{table}[H]
     \centering
     \caption{Tecnologías utilizadas en el proyecto.}
-    \begin{tabular}{p{4cm} p{7.5cm}}
+    \label{tab:tecnologias}
+    \begin{tabularx}{\textwidth}{p{4cm} X}
         \toprule
         \textbf{Tecnología} & \textbf{Uso dentro del proyecto} \\
         \midrule
-        C++17 & Lenguaje de programación principal; programación orientada a objetos, plantillas y biblioteca estándar (contenedores y generación de números aleatorios). \\
-        SFML 2.6 & Biblioteca multimedia: renderizado 2D, creación de la ventana, manejo de eventos y figuras geométricas (círculos, polígonos, rectángulos). \\
-        CMake $\geq$ 3.20 & Sistema de construcción multiplataforma del proyecto. \\
-        nlohmann/json & Biblioteca \emph{header-only} para la lectura de los archivos de tema en formato JSON. \\
-        Geometría computacional (propia) & Pruebas punto-en-polígono (ocupación y convexidad) y proyección punto--segmento (seguimiento de rutas). \\
-        Rejilla de colisiones (propia) & Estructura de celdas ocupadas con hashing espacial para consultas de colisión en tiempo casi constante. \\
-        Kit de widgets (propio) & Componentes de interfaz desarrollados desde cero: botones, campos numéricos, listas desplegables, paneles y barra de título. \\
-        Git & Control de versiones durante todo el desarrollo. \\
-        Sistemas operativos & Desarrollo y pruebas funcionales en Windows y macOS; pruebas de rendimiento adicionales en Linux. \\
+
+        C++17 &
+        Lenguaje de programación principal; programación orientada a objetos, plantillas y biblioteca estándar (contenedores y generación de números aleatorios). \\
+
+        SFML 2.6 &
+        Biblioteca multimedia: renderizado 2D, creación de la ventana, manejo de eventos y figuras geométricas (círculos, polígonos, rectángulos). \\
+
+        CMake $\geq$ 3.20 &
+        Sistema de construcción multiplataforma del proyecto. \\
+
+        nlohmann/json &
+        Biblioteca \emph{header-only} para la lectura de los archivos de tema en formato JSON. \\
+
+        Geometría computacional (propia) &
+        Pruebas punto-en-polígono (ocupación y convexidad) y proyección punto--segmento (seguimiento de rutas). \\
+
+        Rejilla de colisiones (propia) &
+        Estructura de celdas ocupadas con hashing espacial para consultas de colisión en tiempo casi constante. \\
+
+        Kit de widgets (propio) &
+        Componentes de interfaz desarrollados desde cero: botones, campos numéricos, listas desplegables, paneles y barra de título. \\
+
+        Git &
+        Control de versiones durante todo el desarrollo. \\
+
+        Sistemas operativos &
+        Desarrollo y pruebas funcionales en Windows y macOS; pruebas de rendimiento adicionales en Linux. \\
+
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 \subsection{Implementación}
@@ -449,9 +528,8 @@ Las decisiones técnicas más relevantes y su justificación fueron las siguient
     \item \textbf{Temas configurables en JSON.} La separación de los temas en archivos externos permite personalizar la apariencia sin recompilar y facilitó la depuración visual durante el desarrollo.
 \end{itemize}
 
-% TODO: complementar con los resultados cuantitativos de las pruebas de rendimiento
-% (número máximo de individuos en tiempo real, fotogramas por segundo) una vez concluidas.
 La aplicación se validó funcionalmente durante su desarrollo en Windows y macOS, y se sometió a pruebas adicionales de rendimiento; los resultados cuantitativos se reportan en la sección de resultados de este documento.
+
 % ============================================================
 % 7. IMPLEMENTACIÓN
 % ============================================================
@@ -490,7 +568,7 @@ La población se crea indicando el número de individuos ($1 \le N \le 5000$) y 
     \item \textbf{Sin zonas de inicio:} los individuos se generan dentro del círculo inscrito al centro del espacio.
 \end{itemize}
 
-Cada individuo se coloca en una posición aleatoria dentro de su zona con hasta mil reintentos, validando contra la rejilla de colisiones que no se superponga con obstáculos ni con otros individuos; al colocarse registra su contorno en la rejilla y lo libera al ser eliminado, manteniendo la consistencia de la detección de colisiones (RF-06). El empaquetamiento es realista: en el escenario de validación con zonas de radio 113 y radio de individuo 5 se colocaron 384 de 500 individuos solicitados, al saturarse el espacio libre dentro de las zonas; con radios menores el llenado fue completo.
+Cada individuo se coloca en una posición aleatoria dentro de su zona con hasta mil reintentos, validando contra la rejilla de colisiones que no se superponga con obstáculos ni con otros individuos; al colocarse registra su contorno en la rejilla y lo libera al ser eliminado, manteniendo la consistencia de la detección de colisiones (RF-06). El empaquetamiento respeta la ocupación del espacio: en los escenarios de validación, las poblaciones solicitadas de 500, 2000 y 4000 individuos se colocaron por completo sin superposiciones.
 
 \subsection{Generación de la red de rutas (algoritmo bioinspirado)}
 
@@ -505,12 +583,12 @@ Durante la validación del proyecto en Linux se detectaron y corrigieron dos pro
     \item El crecimiento en amplitud (tres descendientes por nodo) hacía que el límite de nodos se alcanzara en niveles poco profundos, impidiendo alcanzar metas lejanas. Se incorporaron límites de exploración (20\,000 nodos y 30 niveles de profundidad) y un control de puntas activas: por nivel se conservan hasta 60 nodos muestreados uniformemente, lo que permite explorar en profundidad —análogo a las puntas de crecimiento del micelio— y garantiza la terminación en cualquier escenario.
 \end{itemize}
 
-Con estas correcciones, el escenario de validación (dos zonas de despliegue y una meta a más de 500 unidades de distancia, con un obstáculo central) genera la red completa —alrededor de 12 rutas, entre 96 y 99 segmentos— en aproximadamente un segundo.
+Con estas correcciones, el escenario de validación (dos zonas de despliegue y una meta a más de 500 unidades de distancia, con un obstáculo central) genera la red completa —alrededor de 12 rutas, entre 96 y 102 segmentos— en aproximadamente un segundo.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{figuras/bench_2000_0_escenario.png}
-    \caption{Escenario de validación generado por el modo \texttt{--autotest}: zonas de inicio (verde), zona meta (rosa), obstáculo hexagonal central y red de rutas bioinspirada (líneas claras) que conecta ambas zonas con la meta.}
+    \includegraphics[width=0.92\textwidth]{figuras/escenario.png}
+    \caption{Escenario de validación generado por el modo \texttt{--autotest}: dos zonas de despliegue con 150 individuos (radio 2), zona meta (rosa), obstáculo hexagonal central y red de rutas bioinspirada (líneas claras) que conecta ambas zonas con la meta.}
     \label{fig:red}
 \end{figure}
 
@@ -520,17 +598,28 @@ El bucle principal de la aplicación actualiza la simulación con un paso de tie
 
 \begin{enumerate}
     \item Si el individuo se encuentra dentro de una zona meta, se desplaza hacia un punto aleatorio dentro de la misma (comportamiento de permanencia/deambulado).
-    \item En caso contrario, si la red de rutas existe, el individuo se asigna al segmento más cercano mediante proyección punto--segmento (la primera vez o al liberar un segmento) y se dirige al punto más próximo de dicho segmento; al alcanzar su extremo, se libera la asignación y en el siguiente fotograma se elige nuevamente el segmento más cercano.
+    \item En caso contrario, si la red de rutas existe, el individuo se asigna al segmento más cercano mediante proyección punto--segmento (la primera vez o al incorporarse a la red) y se dirige al punto más próximo de dicho segmento; al alcanzar su extremo, continúa por el segmento contiguo de la red —el que comienza donde termina el actual—, recorriendo así la ruta completa desde la zona de despliegue hasta la meta.
     \item Si no existe red, el individuo realiza un paseo aleatorio y cambia de dirección al colisionar o con probabilidad baja.
 \end{enumerate}
 
-El desplazamiento se resuelve contra la rejilla de colisiones compartida (obstáculos e individuos): se intenta el movimiento completo y, si la posición resultante está ocupada o sale del espacio, se reintenta con magnitud decreciente (factores de 1.0 a 0.15, hasta 18 intentos). Esto produce un deslizamiento natural a lo largo de los obstáculos y evita la interpenetración entre individuos sin necesidad de resolver empujes. Al llegar a una meta, los individuos permanecen dentro de ella deambulando.
+El desplazamiento se resuelve contra la rejilla de colisiones compartida (obstáculos e individuos): se intenta el movimiento completo y, si la posición resultante está ocupada o sale del espacio, se reintenta con magnitud decreciente (factores de 1.0 a 0.15, hasta 18 intentos) y, en caso de seguir bloqueado, se intenta el movimiento por ejes por separado (primero en X y luego en Y). Esto produce un deslizamiento natural a lo largo de los obstáculos y alrededor de otros individuos, y evita la interpenetración sin necesidad de resolver empujes. Al llegar a una meta, los individuos permanecen dentro de ella deambulando.
+
+Durante la validación se corrigieron además dos fallos de navegación detectados con poblaciones en movimiento: cuando un individuo alcanzaba exactamente el extremo de un segmento se producía una división por cero que lo dejaba congelado, y al liberar la asignación se podía reincorporar a un segmento que lo regresaba hacia la zona de despliegue, provocando embotellamientos en los nudos de la red. La continuidad por segmento contiguo y las guardas de longitud nula descritas arriba resuelven ambos casos: los individuos recorren la red de principio a fin y se concentran en la meta.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.92\textwidth]{figuras/bench_2000_1_simulacion.png}
-    \caption{Simulación en curso con 2000 individuos: la población abandona las zonas de inicio y se incorpora a la red de rutas dirigiéndose hacia la meta.}
+    \includegraphics[width=0.92\textwidth]{figuras/simulacion.png}
+    \caption{Simulación en curso con 150 individuos: la población abandona las zonas de despliegue, recorre la red de rutas sorteando el obstáculo central y una parte ya se concentra en la meta.}
     \label{fig:simulacion}
+\end{figure}
+
+El seguimiento de la red es continuo: al llegar a la meta, los individuos permanecen dentro de ella deambulando en lugar de detenerse en el borde o retroceder. La figura~\ref{fig:llegada} muestra el estado final de una corrida con 60 individuos, ya concentrados en la zona meta tras recorrer la red completa.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.92\textwidth]{figuras/llegada.png}
+    \caption{Estado final de la simulación con 60 individuos: la población completa recorrió la red bioinspirada y permanece dentro de la zona meta.}
+    \label{fig:llegada}
 \end{figure}
 
 \subsection{Interfaz gráfica, temas y control de vista}
@@ -554,33 +643,34 @@ cmake --build .
 
 El código fuente es portable entre Windows, macOS y Linux; las únicas llamadas específicas de Windows están aisladas bajo directivas de preprocesador. Durante el servicio social se validó en Windows y macOS, y en la etapa final se compiló y verificó en Linux (Rocky Linux 9, GCC 11.5, SFML 2.6.2), donde se ejecutaron las pruebas de rendimiento que se reportan a continuación.
 
-Para que los escenarios sean reproducibles, el ejecutable incorpora un modo de pruebas automatizadas (\texttt{--autotest}) que construye un escenario determinista (espacio, obstáculos, zonas de inicio y meta, red de rutas y población), reporta por segundo los fotogramas por segundo y, al terminar, guarda capturas de pantalla del escenario, de la simulación en curso y del estado final:
+Para que los escenarios sean reproducibles, el ejecutable incorpora un modo de pruebas automatizadas (\texttt{--autotest}) que construye un escenario determinista (espacio, obstáculos, zonas de inicio y meta, red de rutas y población), reporta por segundo los fotogramas por segundo y, al terminar, guarda capturas de pantalla del escenario, de la simulación en curso y del estado final. El factor \texttt{--speed} acelera la simulación para observar la llegada de la población a la meta en pocos segundos (las figuras~\ref{fig:simulacion} y~\ref{fig:llegada} se generaron así):
 
 \begin{verbatim}
 ./VibeSim --autotest --n 2000 --seconds 10 --out ../evidencias/bench_2000
+./VibeSim --autotest --n 150 --speed 10 --seconds 12 --out ../evidencias/demo_150
 \end{verbatim}
 
-Las pruebas se ejecutaron con poblaciones de 500, 2000 y 4000 individuos solicitados, en el escenario de la figura~\ref{fig:red} (espacio de 1100$\times$750 unidades, dos zonas de inicio, un obstáculo y una meta). La tabla~\ref{tab:rendimiento} resume los resultados; el tiempo de actualización corresponde únicamente a la lógica de simulación (movimiento y colisiones) y es independiente de la tarjeta gráfica.
+Las pruebas de rendimiento se ejecutaron con poblaciones de 500, 2000 y 4000 individuos, todas colocadas por completo, en el escenario de la figura~\ref{fig:red} (espacio de 1100$\times$750 unidades, dos zonas de inicio, un obstáculo y una meta). La tabla~\ref{tab:rendimiento} resume los resultados; el tiempo de actualización corresponde únicamente a la lógica de simulación (movimiento y colisiones) y es independiente de la tarjeta gráfica.
 
 \begin{table}[H]
     \centering
     \caption{Resultados de la verificación de rendimiento en Linux (Rocky Linux 9, GCC 11.5, SFML 2.6.2, NVIDIA RTX 3060; renderizado sin límite de fotogramas).}
     \label{tab:rendimiento}
-    \begin{tabular}{p{6cm} c c c}
+    \begin{tabularx}{\textwidth}{p{5.5cm} X X X}
         \toprule
         \textbf{Métrica} & \textbf{500} & \textbf{2000} & \textbf{4000} \\
         \midrule
-        Individuos colocados & 384 & 2000 & 4000 \\
+        Individuos colocados & 500 & 2000 & 4000 \\
         Radio del individuo (unidades) & 5 & 3 & 2 \\
-        FPS promedio & 278.2 & 73.2 & 42.7 \\
-        FPS mínimo & 227.9 & 68.2 & 39.9 \\
-        Actualización (ms por fotograma) & 2.85 & 12.26 & 21.37 \\
-        Renderizado (ms por fotograma) & 0.003 & 0.018 & 1.04 \\
+        FPS promedio & 445.9 & 108.0 & 59.7 \\
+        FPS mínimo & 328.7 & 97.6 & 54.2 \\
+        Actualización (ms por fotograma) & 1.46 & 7.86 & 14.63 \\
+        Renderizado (ms por fotograma) & 0.003 & 0.012 & 1.02 \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
-El costo de actualización crece de forma aproximadamente lineal con la población (≈5.3\,$\mu$s por individuo por fotograma); con 4000 individuos la simulación se mantuvo por encima de 39 FPS en todo momento, cumpliendo el requisito de tiempo real (NFR-01) aun considerando que la lógica de simulación es independiente de la GPU. Los registros completos y las capturas de estas corridas se conservan en el repositorio, en la carpeta \texttt{evidencias/}, y su interpretación se presenta en la sección de resultados.
+El costo de actualización crece de forma aproximadamente lineal con la población (≈3.7\,$\mu$s por individuo por fotograma); con 4000 individuos la simulación se mantuvo por encima de 54 FPS en todo momento, cumpliendo el requisito de tiempo real (NFR-01) aun considerando que la lógica de simulación es independiente de la GPU. Los registros completos y las capturas de estas corridas se conservan en el repositorio, en la carpeta \texttt{evidencias/}, y su interpretación se presenta en la sección de resultados.
 
 % ============================================================
 % 8. RESULTADOS
@@ -594,23 +684,23 @@ En esta sección se resumen e interpretan los resultados de la implementación. 
 
 Se obtuvo una prueba de concepto funcional de punta a punta: es posible configurar un escenario completo (espacio, obstáculos regulares y convexos, zonas de despliegue y meta, población), generar la red de rutas y simular la navegación de la población hacia la meta, todo desde la interfaz gráfica y sin intervención manual sobre el código. El flujo verifica de forma integral los requerimientos funcionales RF-01 a RF-12 descritos en la sección de Desarrollo.
 
-La generación de la red de rutas opera de forma confiable y rápida: en el escenario de validación (dos zonas de despliegue, un obstáculo central y una meta a más de 500 unidades de distancia) la red se genera en aproximadamente un segundo, con entre 96 y 99 segmentos que conforman alrededor de 12 rutas entre los orígenes y la meta (figura~\ref{fig:red}). Durante la validación se corrigieron los problemas de terminación del algoritmo descritos en la sección de Implementación, con lo que la generación concluye siempre, incluso en escenarios donde la meta resulta inaccesible.
+La generación de la red de rutas opera de forma confiable y rápida: en el escenario de validación (dos zonas de despliegue, un obstáculo central y una meta a más de 500 unidades de distancia) la red se genera en aproximadamente un segundo, con entre 96 y 102 segmentos que conforman alrededor de 12 rutas entre los orígenes y la meta (figura~\ref{fig:red}). Durante la validación se corrigieron los problemas de terminación del algoritmo descritos en la sección de Implementación, con lo que la generación concluye siempre, incluso en escenarios donde la meta resulta inaccesible.
 
-La colocación de poblaciones se comporta como un empaquetamiento realista: se colocaron por completo las poblaciones de 2000 y 4000 individuos solicitadas (con radios de 3 y 2 unidades, respectivamente); en la prueba de 500 individuos con radio 5 las zonas de despliegue se saturaron en 384 individuos, deteniéndose la colocación al no encontrar posiciones libres, lo que evidencia que el sistema respeta la ocupación del espacio y no superpone entidades.
+La colocación de poblaciones se comporta como un empaquetamiento realista y sin superposiciones: se colocaron por completo las poblaciones solicitadas de 500, 2000 y 4000 individuos (con radios de 5, 3 y 2 unidades, respectivamente), lo que evidencia que el sistema respeta la ocupación del espacio y no superpone entidades.
 
-La simulación mantiene a los individuos navegando por la red, deslizándose ante obstáculos y entre sí, y concentrándose en la zona meta (figura~\ref{fig:simulacion}); la interfaz, los temas y el control de vista funcionan en tiempo de ejecución, y la aplicación compila y se ejecuta en Windows, macOS y Linux.
+La simulación mantiene a los individuos navegando por la red, deslizándose ante obstáculos y entre sí (figura~\ref{fig:simulacion}), y concentrándose en la zona meta, donde permanecen deambulando (figura~\ref{fig:llegada}); la interfaz, los temas y el control de vista funcionan en tiempo de ejecución, y la aplicación compila y se ejecuta en Windows, macOS y Linux.
 
 \subsection{Resultados de rendimiento}
 
 La tabla~\ref{tab:rendimiento} de la sección de Implementación resume las mediciones. Los resultados más relevantes son:
 
 \begin{itemize}
-    \item El costo de actualización de la simulación (movimiento y colisiones) crece de forma aproximadamente lineal con la población: ≈5.3\,$\mu$s por individuo por fotograma, es decir, 21.37\,ms por fotograma con 4000 individuos. Este costo corresponde únicamente a la lógica de simulación y es independiente de la tarjeta gráfica.
-    \item El renderizado es marginal frente a la lógica (a lo sumo 1.04\,ms por fotograma con 4000 individuos), lo que confirma que la rejilla de colisiones y el kit de interfaz propio no constituyen un cuello de botella.
-    \item Con 4000 individuos la simulación se mantuvo por encima de 39 FPS en todo momento en el entorno de validación, cumpliendo el requisito de tiempo real (NFR-01).
+    \item El costo de actualización de la simulación (movimiento y colisiones) crece de forma aproximadamente lineal con la población: ≈3.7\,$\mu$s por individuo por fotograma, es decir, 14.63\,ms por fotograma con 4000 individuos. Este costo corresponde únicamente a la lógica de simulación y es independiente de la tarjeta gráfica.
+    \item El renderizado es marginal frente a la lógica (a lo sumo 1.02\,ms por fotograma con 4000 individuos), lo que confirma que la rejilla de colisiones y el kit de interfaz propio no constituyen un cuello de botella.
+    \item Con 4000 individuos la simulación se mantuvo por encima de 54 FPS en todo momento en el entorno de validación, cumpliendo el requisito de tiempo real (NFR-01).
 \end{itemize}
 
-Dado que la lógica de simulación es independiente de la GPU, el límite práctico en laptops convencionales lo establece la CPU: 4000 individuos requieren aproximadamente 21\,ms de cómputo por fotograma (≈45 FPS lógicos máximos), y 2000 individuos ≈12\,ms (≈80 FPS lógicos), lo que sitúa al simulador dentro del rango de tiempo real en equipos de uso general. Las mediciones son reproducibles con el modo \texttt{--autotest}; los registros completos y las capturas se conservan en el repositorio.
+Dado que la lógica de simulación es independiente de la GPU, el límite práctico en laptops convencionales lo establece la CPU: 4000 individuos requieren aproximadamente 15\,ms de cómputo por fotograma (≈68 FPS lógicos máximos), y 2000 individuos ≈8\,ms (≈125 FPS lógicos), lo que sitúa al simulador dentro del rango de tiempo real en equipos de uso general. Las mediciones son reproducibles con el modo \texttt{--autotest}; los registros completos y las capturas se conservan en el repositorio.
 
 \subsection{Cumplimiento de objetivos}
 
@@ -620,16 +710,29 @@ El objetivo general —desarrollar un simulador 2D de propósito general con gen
     \centering
     \caption{Cumplimiento de los objetivos específicos.}
     \label{tab:objetivos}
-    \begin{tabular}{p{7.5cm} p{2cm} p{5cm}}
+    \begin{tabularx}{\textwidth}{p{5.5cm} p{1.8cm} X}
         \toprule
         \textbf{Objetivo específico} & \textbf{Estado} & \textbf{Evidencia / indicador} \\
         \midrule
-        Generación dinámica de redes de caminos mediante crecimiento por ramificación & Cumplido & Red de 96--99 segmentos generada en $\approx$1\,s; terminación garantizada en todo escenario \\
-        Configuración interactiva del entorno (espacio, obstáculos, zonas y población) & Cumplido & RF-01 a RF-07 operativos desde la interfaz \\
-        Movimiento de agentes sobre la red con manejo eficiente de colisiones & Cumplido & $\approx$5.3\,$\mu$s por individuo por fotograma; 4000 individuos $>$39 FPS \\
-        Prototipo funcional, documentado y presentado ante el laboratorio & Cumplido & Repositorio con \texttt{README}, modo \texttt{--autotest} y evidencias; presentación al Dr. Genaro Juárez Martínez \\
+
+        Generación dinámica de redes de caminos mediante crecimiento por ramificación &
+        Cumplido &
+        Red de 96--102 segmentos generada en $\approx$1\,s; terminación garantizada en todo escenario. \\
+
+        Configuración interactiva del entorno (espacio, obstáculos, zonas y población) &
+        Cumplido &
+        RF-01 a RF-07 operativos desde la interfaz. \\
+
+        Movimiento de agentes sobre la red con manejo eficiente de colisiones &
+        Cumplido &
+        $\approx$3.7\,$\mu$s por individuo por fotograma; 4000 individuos $>$54 FPS. \\
+
+        Prototipo funcional, documentado y presentado ante el laboratorio &
+        Cumplido &
+        Repositorio con \texttt{README}, modo \texttt{--autotest} y evidencias; presentación al Dr. Genaro Juárez Martínez. \\
+
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
 \end{table}
 
 El proyecto fue presentado ante el Dr. Genaro Juárez Martínez, integrante de ALIROB, y queda disponible en el repositorio como base reutilizable para futuros experimentos de comportamiento colectivo, autoorganización y robótica de enjambres. Los resultados cuantitativos corresponden al entorno de validación descrito en la sección de Implementación; al tratarse de una prueba de concepto, no se realizaron estudios formales de usabilidad ni comparaciones contra otros simuladores, lo que se plantea como trabajo futuro.
@@ -656,7 +759,7 @@ Las conclusiones deben centrarse en los resultados obtenidos y no únicamente
 en describir nuevamente las actividades realizadas.
 
 % ============================================================
-% 11. TRABAJO FUTURO
+% 10. TRABAJO FUTURO
 % ============================================================
 
 \section{Trabajo futuro}

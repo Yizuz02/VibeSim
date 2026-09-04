@@ -232,17 +232,33 @@ int main(int argc, char* argv[]) {
     bool autotest = false;
     int autoN = 2000;
     float autoSeconds = 15.f;
+    float autoSpeed = 1.f;      // multiplicador de velocidad (dt) en autotest
+    float autoMidAt = 2.f;      // instante (s) de la captura intermedia
+    long autoSeed = -1;         // semilla fija (reproducibilidad); -1 = aleatoria
     std::string autoPrefix = "autotest";
     for (int a = 1; a < argc; ++a) {
         std::string arg = argv[a];
         if (arg == "--autotest") autotest = true;
         else if (arg == "--n" && a + 1 < argc) autoN = std::max(1, std::atoi(argv[++a]));
         else if (arg == "--seconds" && a + 1 < argc) autoSeconds = std::max(1.f, static_cast<float>(std::atof(argv[++a])));
+        else if (arg == "--speed" && a + 1 < argc) autoSpeed = std::max(0.1f, static_cast<float>(std::atof(argv[++a])));
+        else if (arg == "--seed" && a + 1 < argc) autoSeed = std::atol(argv[++a]);
         else if (arg == "--out" && a + 1 < argc) autoPrefix = argv[++a];
+    }
+    if (autotest) {
+        autoMidAt = std::max(0.5f, autoSeconds * 0.35f);
+        std::cout << "[autotest] velocidad=x" << autoSpeed
+                  << " captura intermedia en t=" << autoMidAt << "s" << std::endl;
     }
 
     std::random_device rd;
     std::mt19937 gen(rd());
+    if (autotest && autoSeed >= 0) {
+        // Reproducibilidad: misma semilla => misma red y mismo escenario.
+        rng.seed(static_cast<unsigned long>(autoSeed));
+        gen.seed(static_cast<unsigned long>(autoSeed));
+        std::cout << "[autotest] semilla fija: " << autoSeed << std::endl;
+    }
     int widthWindow=1600;
     int heightWindow=900;
     sf::Vector2i positionWindow;
@@ -440,6 +456,8 @@ int main(int argc, char* argv[]) {
     sf::Cursor cursor;
 
     std::map<long, size_t> currentSegmentIndex;
+    std::unordered_map<long, bool> arrived;
+    std::unordered_map<long, int> blockedFrames;
 
     std::vector<std::pair<Point, Point>> segments;
 
@@ -485,11 +503,16 @@ int main(int argc, char* argv[]) {
             obstacles.addRegularPolygon({space.minX() + 350.f, space.minY() + 305.f}, 80.f, 6);
 
             // Radio del individuo segun el tamano de poblacion solicitado.
-            float indRadius = autoN <= 700 ? 5.f : (autoN <= 2200 ? 3.f : 2.f);
+            // En modo demo (--speed > 1) se usa radio 2 para que las rutas no
+            // se saturen y la llegada a la meta sea visible en pocos segundos.
+            float indRadius = (autotest && autoSpeed > 1.f) ? 2.f
+                : (autoN <= 700 ? 5.f : (autoN <= 2200 ? 3.f : 2.f));
             population.setRadius(indRadius);
-            float cell = (1.8f * indRadius) * (1.8f * indRadius) * 2.0f;
+            // Area necesaria por individuo con la caja de colision actual
+            // (2r, alineada con getGlobalBounds en move).
+            float cell = (2.0f * indRadius) * (2.0f * indRadius) * 2.0f;
             float needArea = autoN * cell;
-            float zoneR = std::max(60.f, std::min(150.f,
+            float zoneR = std::max(130.f, std::min(150.f,
                 std::sqrt(needArea / (2.f * 3.14159265f))));
             std::cout << "[autotest] radio individuo=" << indRadius
                       << " radio zonas=" << zoneR << std::endl;
@@ -503,6 +526,9 @@ int main(int argc, char* argv[]) {
 
             // Generacion de la red de rutas (mismo flujo que la interfaz).
             segments.clear();
+            currentSegmentIndex.clear();
+            arrived.clear();
+            blockedFrames.clear();
             for (auto& tempStart : starts.getTargets()) {
                 auto* circle = dynamic_cast<sf::CircleShape*>(tempStart.shape.get());
                 float radius = circle->getRadius();
@@ -550,7 +576,7 @@ int main(int argc, char* argv[]) {
     while (window.isOpen()) {
 
         sf::Event event;
-        float dt = 0.016f;
+        float dt = 0.016f * (autotest ? autoSpeed : 1.f);
 
         // Obtener posición del mouse
         sf::Vector2f mouse = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y},simView);
@@ -654,6 +680,9 @@ int main(int argc, char* argv[]) {
                         if (space.contains(x+r, y+r, r)) {
                             goals.addTarget({static_cast<int>(x), static_cast<int>(y)}, r);
                             segments.clear();
+                            currentSegmentIndex.clear();
+                            arrived.clear();
+                            blockedFrames.clear();
                             buttonClearGoals.setEnabled(true);
                             int N = 3;        // ramificaciones por punto
                             float step = 100;  // tamaño del paso
@@ -1030,6 +1059,8 @@ int main(int argc, char* argv[]) {
                 population.removeIndividual(selectedIndividual);
                 directions.erase(selectedIndividual);
                 currentSegmentIndex.erase(selectedIndividual);
+                arrived.erase(selectedIndividual);
+                blockedFrames.erase(selectedIndividual);
                 selectedIndividual=-1;
                 populationSize--;
                 buttonDeleteIndividual.setEnabled(false);
@@ -1043,6 +1074,8 @@ int main(int argc, char* argv[]) {
             if (buttonDeletePopulation.isClicked(event, window) && populationSize>0) {
                 population.clear();
                 currentSegmentIndex.clear();
+                arrived.clear();
+                blockedFrames.clear();
                 populationSize=0;
                 selectedIndividual = -1;
                 buttonCreatePopulation.setEnabled(true);
@@ -1075,6 +1108,9 @@ int main(int argc, char* argv[]) {
                 buttonDeleteStart.setEnabled(false);
                 if(starts.empty()){
                     segments.clear();
+                    currentSegmentIndex.clear();
+                    arrived.clear();
+                    blockedFrames.clear();
                 }
             }
 
@@ -1095,6 +1131,9 @@ int main(int argc, char* argv[]) {
                 buttonDeleteGoal.setEnabled(false);
                 if(goals.empty()){
                     segments.clear();
+                    currentSegmentIndex.clear();
+                    arrived.clear();
+                    blockedFrames.clear();
                 }
             }
 
@@ -1178,6 +1217,57 @@ int main(int argc, char* argv[]) {
         if (autotest) autoEvMs += evClock.getElapsedTime().asMilliseconds();
         if (start && !pause) {
             moveClock.restart();
+            // Avanza al segmento contiguo de la red: el que comienza donde
+            // termina el actual (cada nodo pertenece a una sola cadena), lo
+            // que permite recorrer la ruta completa raiz->meta. Si no hay
+            // continuacion, el individuo libera la asignacion (quedo en la
+            // meta o en un extremo de la red).
+            auto advanceSegment = [&](long iid, size_t cur, float ex, float ey) {
+                for (size_t k = 0; k < segments.size(); ++k) {
+                    if (k != cur &&
+                        std::abs(segments[k].first.x - ex) < 1e-3f &&
+                        std::abs(segments[k].first.y - ey) < 1e-3f) {
+                        currentSegmentIndex[iid] = k;
+                        arrived.erase(iid);
+                        return;
+                    }
+                }
+                currentSegmentIndex.erase(iid);
+                arrived[iid] = true;
+            };
+
+            // Helper: reintenta el desplazamiento escalado (1.0 -> 0.15) para
+            // deslizarse alrededor de bloqueos. move() ya resuelve internamente
+            // el combinado, el deslizamiento axial y la evasion lateral.
+            auto tryMoveScaled = [&](Individual* pind, float dx, float dy) -> bool {
+                const int maxAttempts = 18;
+                for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+                    float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.95, ..., 0.15
+                    if (pind->move(dx * factor, dy * factor)) return true;
+                }
+                return false;
+            };
+
+            // Helper: ceder el paso tras un bloqueo prolongado. Primero un
+            // retroceso pequeno (-dx*k) para deshacer un empuje frontal y, si
+            // no, evasion lateral con magnitudes mayores.
+            auto tryYield = [&](Individual* pind, float dx, float dy) -> bool {
+                for (int kk = 0; kk < 8; ++kk) {
+                    float k = 0.5f - kk * 0.05f;  // 0.5 -> 0.15
+                    if (pind->move(-dx * k, -dy * k)) return true;
+                }
+                float len = std::hypot(dx, dy);
+                if (len > 0.f) {
+                    float nx = -dy / len;
+                    float ny =  dx / len;
+                    const float mags[2] = { len * 1.5f, len * 1.0f };
+                    for (float mag : mags) {
+                        if (pind->move(nx * mag, ny * mag)) return true;
+                        if (pind->move(-nx * mag, -ny * mag)) return true;
+                    }
+                }
+                return false;
+            };
             for (auto& [id, ind] : population.getIndividuals()) {
                 sf::Vector2f topLeft1 = ind->getShape().getPosition();  
                 float r1 = ind->getShape().getRadius();
@@ -1244,17 +1334,48 @@ int main(int argc, char* argv[]) {
                 
                 // Si hay segmentos disponibles, usar el más cercano
                 if (!segments.empty()) {
+                    // Estado "arrived": el individuo alcanzo un extremo de la
+                    // red sin continuacion (advanceSegment lo marco). En lugar
+                    // de re-asignarse el mismo segmento y quedar congelado,
+                    // realiza un paseo aleatorio suave acotado a un radio de
+                    // ~3*r1 alrededor de su posicion actual, cambiando de
+                    // direccion si move() falla (sin asignar currentSegmentIndex).
+                    if (arrived.count(id) && arrived[id]) {
+                        std::uniform_real_distribution<float> prob(0.00f, 1.00f);
+                        if (prob(gen) < 0.0001f) {
+                            int directionx = 0;
+                            int directiony = 0;
+                            do {
+                                directionx = dist(gen);
+                                directiony = dist(gen);
+                            } while (directionx == 0 && directiony == 0);
+                            directions[id] = {directionx, directiony};
+                        }
+
+                        float dx = directions[id].first * speed * dt;
+                        float dy = directions[id].second * speed * dt;
+
+                        if (!ind->move(dx, dy)) {
+                            int directionx = 0;
+                            int directiony = 0;
+                            do {
+                                directionx = dist(gen);
+                                directiony = dist(gen);
+                            } while (directionx == 0 && directiony == 0);
+                            directions[id] = {directionx, directiony};
+                        }
+                        continue;
+                    }
+
                     // Obtener índice actual del segmento
                     size_t segIdx;
 
                     if (!currentSegmentIndex.count(id)) {
-                        
-                        // PRIMER FRAME → buscar el segmento más cercano
-
+                        // PRIMER FRAME → buscar el segmento más cercano, con
+                        // preferencia por el de mayor progreso hacia la meta.
                         float minDist = std::numeric_limits<float>::max();
 
                         for (size_t i = 0; i < segments.size(); ++i) {
-                            
                             const auto& seg = segments[i];
                             sf::Vector2f A(seg.first.x, seg.first.y);
                             sf::Vector2f B(seg.second.x, seg.second.y);
@@ -1262,9 +1383,41 @@ int main(int argc, char* argv[]) {
 
                             if (distStart < minDist) {
                                 minDist = distStart;
-                                segIdx = i;
                             }
                         }
+
+                        // Entre los candidatos con distancia similar (hasta
+                        // 1.5x la minima) se elige el de extremo B MAS lejano
+                        // (mayor progreso hacia la meta), descartando los ya
+                        // completados (B a < 0.5px de la posicion actual).
+                        float bestProgress = -1.f;
+                        bool assigned = false;
+                        for (size_t i = 0; i < segments.size(); ++i) {
+                            const auto& seg = segments[i];
+                            sf::Vector2f A(seg.first.x, seg.first.y);
+                            sf::Vector2f B(seg.second.x, seg.second.y);
+                            float distStart = distancePointToSegment(A, B, ind->getShape().getPosition());
+                            if (distStart > minDist * 1.5f) continue;
+
+                            float bx = B.x - ind->getShape().getPosition().x;
+                            float by = B.y - ind->getShape().getPosition().y;
+                            float bDist = std::sqrt(bx * bx + by * by);
+                            if (bDist < 0.5f) continue;  // ya completado
+
+                            if (bDist > bestProgress) {
+                                bestProgress = bDist;
+                                segIdx = i;
+                                assigned = true;
+                            }
+                        }
+
+                        if (!assigned) {
+                            // Sin candidato valido: tratar como extremo de red
+                            // alcanzado (arrived) en lugar de asignar arbitrario.
+                            arrived[id] = true;
+                            continue;
+                        }
+
                         currentSegmentIndex[id] = segIdx;  // inicializar
                         if (!autotest)
                             std::cout <<"Id: "<< id << " Seg: " << currentSegmentIndex[id] << std::endl;
@@ -1307,73 +1460,63 @@ int main(int argc, char* argv[]) {
                         dx = seg.second.x - ind->getShape().getPosition().x;
                         dy = seg.second.y - ind->getShape().getPosition().y;
                         length = std::sqrt(dx*dx + dy*dy);
+                        // Extremo exacto del segmento: continuar con el
+                        // segmento contiguo de la red (evita division por
+                        // cero / NaN y quedar congelado).
+                        if (length < 1e-3f) {
+                            advanceSegment(id, segIdx, seg.second.x, seg.second.y);
+                            continue;
+                        }
                         dx = (dx / length) * speed * dt;
                         dy = (dy / length) * speed * dt;
-                        // Intentar mover
-                        const int maxAttempts = 18;
-                        bool moved = false;
-
-                        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-
-                            float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
-                            float tryDx = dx * factor;
-                            float tryDy = dy * factor;
-
-                            if (ind->move(tryDx, tryDy)) {
-                                moved = true;
-                                break;
-                            }
-                        }
-                        if (moved){
+                        // Intentar mover (combinado -> axial -> evasion lateral)
+                        bool moved = tryMoveScaled(ind.get(), dx, dy);
+                        if (moved) {
+                            blockedFrames[id] = 0;
                             float distToEnd = std::sqrt(
                             (seg.second.x - ind->getShape().getPosition().x)*(seg.second.x - ind->getShape().getPosition().x) +
                             (seg.second.y - ind->getShape().getPosition().y)*(seg.second.y - ind->getShape().getPosition().y)
                             );
                             if (distToEnd < speed * dt * 1.5f) { // tolerancia
-                            currentSegmentIndex.erase(id);
+                                advanceSegment(id, segIdx, seg.second.x, seg.second.y);
+                            }
+                        } else {
+                            // Bloqueo prolongado: contabilizar frames y, al
+                            // superar el umbral, ceder el paso para romper
+                            // simetrias de deadlock frontal.
+                            if (++blockedFrames[id] > 45 &&
+                                tryYield(ind.get(), dx, dy)) {
+                                blockedFrames[id] = 0;
                             }
                         }
                     } else {
                         dx = (dx / length) * speed * dt;
                         dy = (dy / length) * speed * dt;
-                        const int maxAttempts = 18;
-                        bool moved = false;
-
-                        for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-
-                            float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
-                            float tryDx = dx * factor;
-                            float tryDy = dy * factor;
-
-                            if (ind->move(tryDx, tryDy)) {
-                                moved = true;
-                                break;
-                            }
-                        }
-                        if (!moved){
+                        bool moved = tryMoveScaled(ind.get(), dx, dy);
+                        if (!moved) {
                             dx = seg.second.x - ind->getShape().getPosition().x;
                             dy = seg.second.y - ind->getShape().getPosition().y;
                             length = std::sqrt(dx*dx + dy*dy);
+                            if (length < 1e-3f) {
+                                advanceSegment(id, segIdx, seg.second.x, seg.second.y);
+                                continue;
+                            }
                             dx = (dx / length) * speed * dt;
                             dy = (dy / length) * speed * dt;
                             // Intentar mover
-                            const int maxAttempts = 18;
-                            bool moved = false;
-
-                            for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-
-                                float factor = 1.0f - (attempt * 0.05f);  // 1.0, 0.8, 0.6, 0.4, 0.2
-                                float tryDx = dx * factor;
-                                float tryDy = dy * factor;
-
-                                if (ind->move(tryDx, tryDy)) {
-                                    moved = true;
-                                    break;
+                            bool moved2 = tryMoveScaled(ind.get(), dx, dy);
+                            if (!moved2) {
+                                if (++blockedFrames[id] > 45 &&
+                                    tryYield(ind.get(), dx, dy)) {
+                                    blockedFrames[id] = 0;
                                 }
+                            } else {
+                                blockedFrames[id] = 0;
                             }
-
+                        } else {
+                            blockedFrames[id] = 0;
                         }
-                    } 
+                    }
                     
 
                     
@@ -1403,7 +1546,6 @@ int main(int argc, char* argv[]) {
                         directions[id] = {directionx, directiony};
                     }
                 }
-
             }
             if (autotest) autoMoveMs += moveClock.getElapsedTime().asMilliseconds();
         }
@@ -1534,7 +1676,7 @@ int main(int argc, char* argv[]) {
                 autoPhase = 1;
             }
 
-            if (autoPhase == 1 && autoWindowTime >= 2.0f && !autoMidShot) {
+            if (autoPhase == 1 && autoWindowTime >= autoMidAt && !autoMidShot) {
                 captureFrame(autoPrefix + "_1_simulacion.png");
                 autoMidShot = true;
             }

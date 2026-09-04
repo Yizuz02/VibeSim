@@ -43,7 +43,10 @@ Individual& Population::createIndividual(std::pair<int,int> center, int radius) 
 
     Collisions& collisions = space->getCollisions();
 
-    constexpr int MAX_ATTEMPTS = 1000;
+    // Con la caja de colision alineada a 2r (getGlobalBounds), la densidad de
+    // celdas ocupadas por zona es mayor que con la caja 1.8r anterior, asi que
+    // el muestreo con rechazo necesita mas intentos para llenar la zona.
+    constexpr int MAX_ATTEMPTS = 6000;
     std::pair<int,int> pos;
     sf::FloatRect box;
     bool valid = false;
@@ -56,8 +59,8 @@ Individual& Population::createIndividual(std::pair<int,int> center, int radius) 
         box = sf::FloatRect(
             static_cast<float>(pos.first),
             static_cast<float>(pos.second),
-            this->radius * 1.8f,
-            this->radius * 1.8f
+            2.0f * this->radius,
+            2.0f * this->radius
         );
 
         int left   = std::floor(box.left);
