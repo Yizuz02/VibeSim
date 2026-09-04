@@ -499,9 +499,6 @@ int main(int argc, char* argv[]) {
             space.setSize({1100, 750});
             std::cout << "[autotest] espacio redimensionado a 1100x750" << std::endl;
 
-            // Obstaculo central: obliga a desviar la red sin bloquearla.
-            obstacles.addRegularPolygon({space.minX() + 350.f, space.minY() + 305.f}, 80.f, 6);
-
             // Radio del individuo segun el tamano de poblacion solicitado.
             // En modo demo (--speed > 1) se usa radio 2 para que las rutas no
             // se saturen y la llegada a la meta sea visible en pocos segundos.
@@ -512,15 +509,38 @@ int main(int argc, char* argv[]) {
             // (2r, alineada con getGlobalBounds en move).
             float cell = (2.0f * indRadius) * (2.0f * indRadius) * 2.0f;
             float needArea = autoN * cell;
-            float zoneR = std::max(130.f, std::min(150.f,
-                std::sqrt(needArea / (2.f * 3.14159265f))));
-            std::cout << "[autotest] radio individuo=" << indRadius
-                      << " radio zonas=" << zoneR << std::endl;
 
-            // Zonas de despliegue (inicio) apiladas a la izquierda y meta a la derecha.
-            starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 240.f - zoneR}, zoneR);
-            starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 540.f - zoneR}, zoneR);
-            goals.addTarget({space.minX() + 600.f, space.minY() + 235.f}, 150.f);
+            if (autoSpeed > 1.f) {
+                // Escenario simple de demostracion: una sola zona de inicio y
+                // una meta, con tres obstaculos que obligan a un recorrido en S
+                // (poblaciones pequenas, hasta 40 individuos).
+                float zoneR = std::max(60.f, std::min(110.f,
+                    std::sqrt(needArea / 3.14159265f)));
+                std::cout << "[autotest] radio individuo=" << indRadius
+                          << " radio zona=" << zoneR << std::endl;
+                starts.addTarget({space.minX() + 170.f - zoneR,
+                                  space.minY() + 375.f - zoneR}, zoneR);
+                goals.addTarget({space.minX() + 690.f,
+                                 space.minY() + 265.f}, 110.f);
+                obstacles.addRegularPolygon({space.minX() + 350.f,
+                                             space.minY() + 215.f}, 70.f, 6);
+                obstacles.addRegularPolygon({space.minX() + 490.f,
+                                             space.minY() + 395.f}, 70.f, 6);
+                obstacles.addRegularPolygon({space.minX() + 645.f,
+                                             space.minY() + 260.f}, 55.f, 6);
+            } else {
+                // Escenario de pruebas de rendimiento: dos zonas de inicio
+                // apiladas a la izquierda, un obstaculo central y una meta
+                // (poblaciones de hasta 4000 individuos).
+                obstacles.addRegularPolygon({space.minX() + 350.f, space.minY() + 305.f}, 80.f, 6);
+                float zoneR = std::max(130.f, std::min(150.f,
+                    std::sqrt(needArea / (2.f * 3.14159265f))));
+                std::cout << "[autotest] radio individuo=" << indRadius
+                          << " radio zonas=" << zoneR << std::endl;
+                starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 240.f - zoneR}, zoneR);
+                starts.addTarget({space.minX() + 200.f - zoneR, space.minY() + 540.f - zoneR}, zoneR);
+                goals.addTarget({space.minX() + 600.f, space.minY() + 235.f}, 150.f);
+            }
             std::cout << "[autotest] zonas=" << starts.getTargets().size()
                       << " metas=" << goals.getTargets().size() << std::endl;
 
